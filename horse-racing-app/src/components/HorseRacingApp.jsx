@@ -605,27 +605,11 @@ const HorseRacingApp = () => {
 
             <footer className="footer">
                 <div className="footer-content">
-                    <div className="footer-section">
-                        <h4>🏇 Tor Służewiec</h4>
-                        <p>Premier horse racing venue in Poland</p>
-                        <p>ul. Puławska 266, 02-976 Warsaw</p>
-                    </div>
 
-                    <div className="footer-section">
-                        <h4>🎰 Betting Partners</h4>
-                        <p>TRAF - Official totalizator</p>
-                        <p>Bet responsibly • 18+</p>
-                    </div>
-
-                    <div className="footer-section">
-                        <h4>📱 Stay Connected</h4>
-                        <p>Follow us for live updates</p>
-                        <p>Race results & news</p>
-                    </div>
                 </div>
 
                 <div className="footer-bottom">
-                    <p>&copy; 2025 Tor Służewiec Racing App. All rights reserved.</p>
+                    <p>&copy; 2025 Polish Horse Racing App. All rights reserved.</p>
                     <p>Race data subject to change • Check official sources</p>
                 </div>
             </footer>
