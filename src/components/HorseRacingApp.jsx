@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './HorseRacingApp.css';
 
@@ -10,13 +10,88 @@ const HorseRacingApp = () => {
     const [error, setError] = useState(null);
     const [lastUpdate, setLastUpdate] = useState(null);
 
-    useEffect(() => {
-        fetchRacingData();
-        const interval = setInterval(fetchRacingData, 10 * 60 * 1000);
-        return () => clearInterval(interval);
+    const generateJockeyStats = useCallback((raceData) => {
+        const jockeys = {};
+
+        raceData.forEach(race => {
+            race.horses?.forEach(horse => {
+                if (!jockeys[horse.jockey]) {
+                    jockeys[horse.jockey] = {
+                        name: horse.jockey,
+                        wins: 0,
+                        races: 0,
+                        earnings: 0
+                    };
+                }
+                jockeys[horse.jockey].races++;
+
+                const oddsNum = parseFloat(horse.odds);
+                if (oddsNum < 4) {
+                    jockeys[horse.jockey].wins += Math.floor(Math.random() * 3) + 1;
+                    jockeys[horse.jockey].earnings += Math.floor(Math.random() * 15000) + 5000;
+                } else {
+                    jockeys[horse.jockey].wins += Math.floor(Math.random() * 2);
+                    jockeys[horse.jockey].earnings += Math.floor(Math.random() * 8000) + 2000;
+                }
+            });
+        });
+
+        const sortedJockeys = Object.values(jockeys)
+            .map(jockey => ({
+                ...jockey,
+                winRate: jockey.races > 0 ? ((jockey.wins / (jockey.races * 3)) * 100).toFixed(1) : '0.0'
+            }))
+            .sort((a, b) => b.wins - a.wins)
+            .slice(0, 8);
+
+        setJockeyStats(sortedJockeys);
     }, []);
 
-    const fetchRacingData = async () => {
+    const loadSampleData = useCallback(() => {
+        const sampleRaces = [
+            {
+                id: 'race_1',
+                time: '13:00',
+                title: '2-year-old Horses Group II - Domestic Breeding (PSB) Series A',
+                distance: '1400m',
+                prize: '21,000 zł',
+                status: 'upcoming',
+                venue: 'Tor Służewiec',
+                surface: 'Turf',
+                category: 'Group II',
+                horses: [
+                    { nr: 1, name: 'Sweet Chocolate', jockey: 'A. Reznikov', weight: 56, odds: '3.2', owner: 'Jaskólski Family', trainer: 'W. Olkowski', age: 2, form: '1-2-1' },
+                    { nr: 2, name: 'Granada', jockey: 'T. Kumarbek Uulu', weight: 56, odds: '4.5', owner: 'PPH Falba', trainer: 'J. Kozłowski', age: 2, form: '2-1-3' },
+                    { nr: 3, name: 'Oakley Martini', jockey: 'M. Zholchubekov', weight: 56, odds: '2.8', owner: 'UAB Žirgo Startas', trainer: 'T. Pastuszka', age: 2, form: '1-1-2' },
+                    { nr: 4, name: 'Katla', jockey: 'B. Marat Uulu', weight: 56, odds: '5.1', owner: 'SK Iwno & A. Skrzypczak', trainer: 'I. Karathanasis', age: 2, form: '3-2-4' },
+                    { nr: 5, name: 'Likya', jockey: 'K. Mazur', weight: 56, odds: '6.8', owner: 'M. Kaszubowski', trainer: 'C. Pawlak', age: 2, form: '4-3-1' }
+                ]
+            },
+            {
+                id: 'race_2',
+                time: '13:30',
+                title: 'Michałowa Prize - Category A (International Arabian Horses)',
+                distance: '2800m',
+                prize: '56,000 zł',
+                status: 'upcoming',
+                venue: 'Tor Służewiec',
+                surface: 'Turf',
+                category: 'Category A',
+                horses: [
+                    { nr: 1, name: 'Monaasib (GB)', jockey: 'K. Dogdurbek Uulu', weight: 62, odds: '2.5', owner: 'Junior Speed srl', trainer: 'M. Jodłowski', age: 6, form: '1-2-1' },
+                    { nr: 2, name: "Eyd'a Alfash", jockey: 'B. Kalysbek Uulu', weight: 60, odds: '3.8', owner: 'M. Dąbrowski & M. Nieznańska', trainer: 'K. Rogowski', age: 5, form: '2-1-2' },
+                    { nr: 3, name: 'Lindahls Anakin (DK)', jockey: 'K. Mazur', weight: 62, odds: '4.2', owner: 'A. Lindahl', trainer: 'C. Pawlak', age: 5, form: '1-3-1' }
+                ]
+            }
+        ];
+
+        setRaces(sampleRaces);
+        setSelectedRace(sampleRaces[0]);
+        generateJockeyStats(sampleRaces);
+        setLastUpdate(new Date());
+    }, [generateJockeyStats]);
+
+    const fetchRacingData = useCallback(async () => {
         setLoading(true);
         try {
             // Try to fetch live data first
@@ -37,7 +112,13 @@ const HorseRacingApp = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [generateJockeyStats, loadSampleData]);
+
+    useEffect(() => {
+        fetchRacingData();
+        const interval = setInterval(fetchRacingData, 10 * 60 * 1000);
+        return () => clearInterval(interval);
+    }, [fetchRacingData]);
 
     const scrapeSluzewiecWebsite = async () => {
         try {
@@ -91,91 +172,9 @@ const HorseRacingApp = () => {
         }
     };
 
-    const loadSampleData = () => {
-        const sampleRaces = [
-            {
-                id: 'race_1',
-                time: '13:00',
-                title: '2-year-old Horses Group II - Domestic Breeding (PSB) Series A',
-                distance: '1400m',
-                prize: '21,000 zł',
-                status: 'upcoming',
-                venue: 'Tor Służewiec',
-                surface: 'Turf',
-                category: 'Group II',
-                horses: [
-                    { nr: 1, name: 'Sweet Chocolate', jockey: 'A. Reznikov', weight: 56, odds: '3.2', owner: 'Jaskólski Family', trainer: 'W. Olkowski', age: 2, form: '1-2-1' },
-                    { nr: 2, name: 'Granada', jockey: 'T. Kumarbek Uulu', weight: 56, odds: '4.5', owner: 'PPH Falba', trainer: 'J. Kozłowski', age: 2, form: '2-1-3' },
-                    { nr: 3, name: 'Oakley Martini', jockey: 'M. Zholchubekov', weight: 56, odds: '2.8', owner: 'UAB Žirgo Startas', trainer: 'T. Pastuszka', age: 2, form: '1-1-2' },
-                    { nr: 4, name: 'Katla', jockey: 'B. Marat Uulu', weight: 56, odds: '5.1', owner: 'SK Iwno & A. Skrzypczak', trainer: 'I. Karathanasis', age: 2, form: '3-2-4' },
-                    { nr: 5, name: 'Likya', jockey: 'K. Mazur', weight: 56, odds: '6.8', owner: 'M. Kaszubowski', trainer: 'C. Pawlak', age: 2, form: '4-3-1' }
-                ]
-            },
-            {
-                id: 'race_2',
-                time: '13:30',
-                title: 'Michałowa Prize - Category A (International Arabian Horses)',
-                distance: '2800m',
-                prize: '56,000 zł',
-                status: 'upcoming',
-                venue: 'Tor Służewiec',
-                surface: 'Turf',
-                category: 'Category A',
-                horses: [
-                    { nr: 1, name: 'Monaasib (GB)', jockey: 'K. Dogdurbek Uulu', weight: 62, odds: '2.5', owner: 'Junior Speed srl', trainer: 'M. Jodłowski', age: 6, form: '1-2-1' },
-                    { nr: 2, name: "Eyd'a Alfash", jockey: 'B. Kalysbek Uulu', weight: 60, odds: '3.8', owner: 'M. Dąbrowski & M. Nieznańska', trainer: 'K. Rogowski', age: 5, form: '2-1-2' },
-                    { nr: 3, name: 'Lindahls Anakin (DK)', jockey: 'K. Mazur', weight: 62, odds: '4.2', owner: 'A. Lindahl', trainer: 'C. Pawlak', age: 5, form: '1-3-1' }
-                ]
-            },
-            // Add more races as needed...
-        ];
-
-        setRaces(sampleRaces);
-        setSelectedRace(sampleRaces[0]);
-        generateJockeyStats(sampleRaces);
-        setLastUpdate(new Date());
-    };
-
     const generateSampleHorses = (raceIndex) => {
         // Generate sample horses based on race index
         return [];
-    };
-
-    const generateJockeyStats = (raceData) => {
-        const jockeys = {};
-
-        raceData.forEach(race => {
-            race.horses?.forEach(horse => {
-                if (!jockeys[horse.jockey]) {
-                    jockeys[horse.jockey] = {
-                        name: horse.jockey,
-                        wins: 0,
-                        races: 0,
-                        earnings: 0
-                    };
-                }
-                jockeys[horse.jockey].races++;
-
-                const oddsNum = parseFloat(horse.odds);
-                if (oddsNum < 4) {
-                    jockeys[horse.jockey].wins += Math.floor(Math.random() * 3) + 1;
-                    jockeys[horse.jockey].earnings += Math.floor(Math.random() * 15000) + 5000;
-                } else {
-                    jockeys[horse.jockey].wins += Math.floor(Math.random() * 2);
-                    jockeys[horse.jockey].earnings += Math.floor(Math.random() * 8000) + 2000;
-                }
-            });
-        });
-
-        const sortedJockeys = Object.values(jockeys)
-            .map(jockey => ({
-                ...jockey,
-                winRate: jockey.races > 0 ? ((jockey.wins / (jockey.races * 3)) * 100).toFixed(1) : '0.0'
-            }))
-            .sort((a, b) => b.wins - a.wins)
-            .slice(0, 8);
-
-        setJockeyStats(sortedJockeys);
     };
 
     const extractTime = (text) => {
@@ -244,7 +243,7 @@ const HorseRacingApp = () => {
     );
 };
 
-// Header Component
+// Rest of the components remain the same...
 const Header = ({ currentDate, lastUpdate, error }) => (
     <header className="header">
         <div className="header-content">
@@ -271,7 +270,6 @@ const Header = ({ currentDate, lastUpdate, error }) => (
     </header>
 );
 
-// Race List Sidebar Component
 const RaceListSidebar = ({ races, selectedRace, onRaceSelect }) => (
     <div className="race-list-sidebar">
         <div className="sidebar-header">
@@ -292,7 +290,6 @@ const RaceListSidebar = ({ races, selectedRace, onRaceSelect }) => (
     </div>
 );
 
-// Individual Race Item Component
 const RaceItem = ({ race, raceNumber, isActive, onClick }) => (
     <button
         className={`race-item ${isActive ? 'active' : ''}`}
@@ -313,7 +310,6 @@ const RaceItem = ({ race, raceNumber, isActive, onClick }) => (
     </button>
 );
 
-// Main Content Component
 const MainContent = ({ selectedRace }) => {
     if (!selectedRace) {
         return (
@@ -337,7 +333,6 @@ const MainContent = ({ selectedRace }) => {
     );
 };
 
-// Race Details Header Component
 const RaceDetailsHeader = ({ race }) => (
     <div className="race-details-header">
         <h1 className="race-title-main">{race.title}</h1>
@@ -350,7 +345,6 @@ const RaceDetailsHeader = ({ race }) => (
     </div>
 );
 
-// Info Card Component
 const InfoCard = ({ label, value }) => (
     <div className="info-card">
         <div className="info-label">{label}</div>
@@ -358,7 +352,6 @@ const InfoCard = ({ label, value }) => (
     </div>
 );
 
-// Horses Section Component
 const HorsesSection = ({ horses }) => (
     <div className="horses-section">
         <h2 className="section-title">Field & Runners</h2>
@@ -377,7 +370,7 @@ const HorsesSection = ({ horses }) => (
                 </tr>
                 </thead>
                 <tbody>
-                {horses.map((horse, index) => (
+                {horses.map((horse) => (
                     <HorseRow
                         key={horse.nr}
                         horse={horse}
@@ -397,7 +390,6 @@ const HorsesSection = ({ horses }) => (
     </div>
 );
 
-// Horse Row Component
 const HorseRow = ({ horse, isFavorite }) => (
     <tr className={`horse-row ${isFavorite ? 'favorite' : ''}`}>
         <td>
@@ -432,7 +424,6 @@ const HorseRow = ({ horse, isFavorite }) => (
     </tr>
 );
 
-// Stats Sidebar Component
 const StatsSidebar = ({ jockeyStats, onRefresh }) => (
     <div className="stats-panel">
         <JockeyLeaderboard jockeyStats={jockeyStats} />
@@ -441,7 +432,6 @@ const StatsSidebar = ({ jockeyStats, onRefresh }) => (
     </div>
 );
 
-// Jockey Leaderboard Component
 const JockeyLeaderboard = ({ jockeyStats }) => (
     <div className="stats-section">
         <h3 className="stats-title">Top Jockeys</h3>
@@ -461,7 +451,6 @@ const JockeyLeaderboard = ({ jockeyStats }) => (
     </div>
 );
 
-// Track Info Component
 const TrackInfo = () => (
     <div className="stats-section">
         <h3 className="stats-title">Track Information</h3>
@@ -484,7 +473,6 @@ const TrackInfo = () => (
     </div>
 );
 
-// Refresh Section Component
 const RefreshSection = ({ onRefresh }) => (
     <div className="stats-section">
         <button className="refresh-btn" onClick={onRefresh}>
