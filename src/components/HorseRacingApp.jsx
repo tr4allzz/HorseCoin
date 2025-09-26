@@ -10,6 +10,81 @@ const HorseRacingApp = () => {
     const [error, setError] = useState(null);
     const [lastUpdate, setLastUpdate] = useState(null);
 
+    // Helper functions that don't need useCallback since they don't have dependencies
+    const extractTime = (text) => {
+        if (!text) return null;
+        const timeMatch = text.match(/(\d{1,2}):(\d{2})/);
+        return timeMatch ? timeMatch[0] : null;
+    };
+
+    const extractDistance = (text) => {
+        if (!text) return null;
+        const distanceMatch = text.match(/(\d+)\s*m/i);
+        return distanceMatch ? distanceMatch[0] : null;
+    };
+
+    const extractPrize = (text) => {
+        if (!text) return null;
+        const prizeMatch = text.match(/(\d+[\s,]*\d*)\s*(zł|PLN)/i);
+        return prizeMatch ? prizeMatch[0] : null;
+    };
+
+    const generateSampleHorses = () => {
+        return [];
+    };
+
+    const parseSluzewiecHTML = useCallback((html) => {
+        try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const raceElements = doc.querySelectorAll('.race-item, .gonitwa, [class*="race"], .program-item');
+            const races = [];
+
+            raceElements.forEach((element, index) => {
+                if (index < 9) {
+                    const timeText = element.querySelector('.time, .godzina, [class*="time"]')?.textContent?.trim();
+                    const titleText = element.querySelector('.title, .nazwa, h3, h4')?.textContent?.trim();
+                    const distanceText = element.querySelector('.distance, .dystans')?.textContent?.trim();
+                    const prizeText = element.querySelector('.prize, .nagroda')?.textContent?.trim();
+
+                    races.push({
+                        id: `race_${index + 1}`,
+                        time: extractTime(timeText) || `${13 + index}:${index % 2 === 0 ? '00' : '30'}`,
+                        title: titleText || `Race ${index + 1}`,
+                        distance: extractDistance(distanceText) || `${1400 + (index % 3) * 200}m`,
+                        prize: extractPrize(prizeText) || `${20000 + index * 3000} zł`,
+                        status: 'upcoming',
+                        venue: 'Tor Służewiec',
+                        surface: index === 0 || index === 7 ? 'All-weather' : 'Turf',
+                        horses: generateSampleHorses()
+                    });
+                }
+            });
+
+            return races.length > 0 ? races : null;
+        } catch (error) {
+            console.error('Error parsing HTML:', error);
+            return null;
+        }
+    }, []);
+
+    const scrapeSluzewiecWebsite = useCallback(async () => {
+        try {
+            const proxyUrl = 'https://api.allorigins.win/raw?url=';
+            const sluzewiecUrl = 'https://torsluzewiec.pl/program-gonitw/';
+
+            const response = await axios.get(proxyUrl + encodeURIComponent(sluzewiecUrl), {
+                timeout: 15000,
+                headers: { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' }
+            });
+
+            return response.data ? parseSluzewiecHTML(response.data) : null;
+        } catch (error) {
+            console.error('Failed to scrape website:', error);
+            return null;
+        }
+    }, [parseSluzewiecHTML]);
+
     const generateJockeyStats = useCallback((raceData) => {
         const jockeys = {};
 
@@ -94,7 +169,6 @@ const HorseRacingApp = () => {
     const fetchRacingData = useCallback(async () => {
         setLoading(true);
         try {
-            // Try to fetch live data first
             const liveData = await scrapeSluzewiecWebsite();
             if (liveData?.length > 0) {
                 setRaces(liveData);
@@ -112,88 +186,13 @@ const HorseRacingApp = () => {
         } finally {
             setLoading(false);
         }
-    }, [generateJockeyStats, loadSampleData]);
+    }, [scrapeSluzewiecWebsite, generateJockeyStats, loadSampleData]);
 
     useEffect(() => {
         fetchRacingData();
         const interval = setInterval(fetchRacingData, 10 * 60 * 1000);
         return () => clearInterval(interval);
     }, [fetchRacingData]);
-
-    const scrapeSluzewiecWebsite = async () => {
-        try {
-            const proxyUrl = 'https://api.allorigins.win/raw?url=';
-            const sluzewiecUrl = 'https://torsluzewiec.pl/program-gonitw/';
-
-            const response = await axios.get(proxyUrl + encodeURIComponent(sluzewiecUrl), {
-                timeout: 15000,
-                headers: { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' }
-            });
-
-            return response.data ? parseSluzewiecHTML(response.data) : null;
-        } catch (error) {
-            console.error('Failed to scrape website:', error);
-            return null;
-        }
-    };
-
-    const parseSluzewiecHTML = (html) => {
-        try {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const raceElements = doc.querySelectorAll('.race-item, .gonitwa, [class*="race"], .program-item');
-            const races = [];
-
-            raceElements.forEach((element, index) => {
-                if (index < 9) {
-                    const timeText = element.querySelector('.time, .godzina, [class*="time"]')?.textContent?.trim();
-                    const titleText = element.querySelector('.title, .nazwa, h3, h4')?.textContent?.trim();
-                    const distanceText = element.querySelector('.distance, .dystans')?.textContent?.trim();
-                    const prizeText = element.querySelector('.prize, .nagroda')?.textContent?.trim();
-
-                    races.push({
-                        id: `race_${index + 1}`,
-                        time: extractTime(timeText) || `${13 + index}:${index % 2 === 0 ? '00' : '30'}`,
-                        title: titleText || `Race ${index + 1}`,
-                        distance: extractDistance(distanceText) || `${1400 + (index % 3) * 200}m`,
-                        prize: extractPrize(prizeText) || `${20000 + index * 3000} zł`,
-                        status: 'upcoming',
-                        venue: 'Tor Służewiec',
-                        surface: index === 0 || index === 7 ? 'All-weather' : 'Turf',
-                        horses: generateSampleHorses(index)
-                    });
-                }
-            });
-
-            return races.length > 0 ? races : null;
-        } catch (error) {
-            console.error('Error parsing HTML:', error);
-            return null;
-        }
-    };
-
-    const generateSampleHorses = (raceIndex) => {
-        // Generate sample horses based on race index
-        return [];
-    };
-
-    const extractTime = (text) => {
-        if (!text) return null;
-        const timeMatch = text.match(/(\d{1,2}):(\d{2})/);
-        return timeMatch ? timeMatch[0] : null;
-    };
-
-    const extractDistance = (text) => {
-        if (!text) return null;
-        const distanceMatch = text.match(/(\d+)\s*m/i);
-        return distanceMatch ? distanceMatch[0] : null;
-    };
-
-    const extractPrize = (text) => {
-        if (!text) return null;
-        const prizeMatch = text.match(/(\d+[\s,]*\d*)\s*(zł|PLN)/i);
-        return prizeMatch ? prizeMatch[0] : null;
-    };
 
     const getCurrentDate = () => {
         return new Date().toLocaleDateString('en-US', {
@@ -243,7 +242,7 @@ const HorseRacingApp = () => {
     );
 };
 
-// Rest of the components remain the same...
+// All the component definitions remain the same...
 const Header = ({ currentDate, lastUpdate, error }) => (
     <header className="header">
         <div className="header-content">
