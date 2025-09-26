@@ -4,7 +4,6 @@ import './HorseRacingApp.css';
 
 const HorseRacingApp = () => {
     const [races, setRaces] = useState([]);
-    const [selectedDay, setSelectedDay] = useState('tomorrow');
     const [selectedRace, setSelectedRace] = useState(null);
     const [jockeyStats, setJockeyStats] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -14,8 +13,8 @@ const HorseRacingApp = () => {
     useEffect(() => {
         fetchSluzewiecData();
 
-        // Update every 5 minutes
-        const interval = setInterval(fetchSluzewiecData, 5 * 60 * 1000);
+        // Update every 10 minutes
+        const interval = setInterval(fetchSluzewiecData, 10 * 60 * 1000);
 
         return () => clearInterval(interval);
     }, []);
@@ -23,25 +22,22 @@ const HorseRacingApp = () => {
     const fetchSluzewiecData = async () => {
         setLoading(true);
         try {
-            // Primary method: Scrape from Służewiec website
+            // Try to fetch from Służewiec website
             const sluzewiecData = await scrapeSluzewiecWebsite();
 
             if (sluzewiecData && sluzewiecData.length > 0) {
                 setRaces(sluzewiecData);
-                if (sluzewiecData.length > 0) {
-                    setSelectedRace(sluzewiecData[0]);
-                }
+                setSelectedRace(sluzewiecData[0]);
                 generateJockeyStats(sluzewiecData);
                 setLastUpdate(new Date());
                 setError(null);
             } else {
-                // Fallback to demo data with realistic Polish racing information
-                loadRealisticSluzewiecData();
+                loadSaturdayRacingData();
             }
         } catch (err) {
             console.error('Error fetching Służewiec data:', err);
-            setError(err.message);
-            loadRealisticSluzewiecData();
+            setError('Using demo data');
+            loadSaturdayRacingData();
         } finally {
             setLoading(false);
         }
@@ -49,15 +45,13 @@ const HorseRacingApp = () => {
 
     const scrapeSluzewiecWebsite = async () => {
         try {
-            // Using AllOrigins proxy to bypass CORS
             const proxyUrl = 'https://api.allorigins.win/raw?url=';
             const sluzewiecUrl = 'https://torsluzewiec.pl/program-gonitw/';
 
             const response = await axios.get(proxyUrl + encodeURIComponent(sluzewiecUrl), {
-                timeout: 10000,
+                timeout: 15000,
                 headers: {
                     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                    'User-Agent': 'Mozilla/5.0 (compatible; RacingBot/1.0)'
                 }
             });
 
@@ -68,68 +62,41 @@ const HorseRacingApp = () => {
             return null;
         } catch (error) {
             console.error('Failed to scrape Służewiec website:', error);
-
-            // Alternative: Try to get data from Polish racing API
-            try {
-                const altResponse = await axios.get('https://api.horse-racing.pl/races', {
-                    params: {
-                        track: 'sluzewiec',
-                        date: getTomorrowDate()
-                    }
-                });
-                return transformPolishAPIData(altResponse.data);
-            } catch (altError) {
-                console.error('Alternative API also failed:', altError);
-                return null;
-            }
+            return null;
         }
     };
 
     const parseSluzewiecHTML = (html) => {
-        const races = [];
-
         try {
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
 
-            // Look for race schedules in various possible selectors
-            const possibleSelectors = [
-                '.race-schedule .race-item',
-                '.program-gonitw .gonitwa',
-                '.schedule-item',
-                '[data-race]',
-                '.race-entry'
-            ];
+            // Look for race information
+            const raceElements = doc.querySelectorAll('.race-item, .gonitwa, [class*="race"], .program-item');
+            const races = [];
 
-            let raceElements = [];
-            for (const selector of possibleSelectors) {
-                raceElements = doc.querySelectorAll(selector);
-                if (raceElements.length > 0) break;
-            }
+            if (raceElements.length > 0) {
+                raceElements.forEach((element, index) => {
+                    if (index < 9) { // Limit to 9 races for Saturday
+                        const timeText = element.querySelector('.time, .godzina, [class*="time"]')?.textContent?.trim();
+                        const titleText = element.querySelector('.title, .nazwa, h3, h4')?.textContent?.trim();
+                        const distanceText = element.querySelector('.distance, .dystans')?.textContent?.trim();
+                        const prizeText = element.querySelector('.prize, .nagroda')?.textContent?.trim();
 
-            // If no structured race elements found, try to parse from text content
-            if (raceElements.length === 0) {
-                return parseFromTextContent(html);
-            }
-
-            raceElements.forEach((element, index) => {
-                const timeText = element.querySelector('.time, .godzina, [class*="time"]')?.textContent?.trim() || '';
-                const titleText = element.querySelector('.title, .nazwa, .race-name, h3, h4')?.textContent?.trim() || '';
-                const distanceText = element.querySelector('.distance, .dystans, [class*="distance"]')?.textContent?.trim() || '';
-                const prizeText = element.querySelector('.prize, .nagroda, [class*="prize"]')?.textContent?.trim() || '';
-
-                races.push({
-                    id: `sluzewiec_${Date.now()}_${index}`,
-                    day: index < 5 ? 'tomorrow' : 'sunday',
-                    time: extractTime(timeText) || `${13 + (index % 8)}:${index % 2 === 0 ? '00' : '30'}`,
-                    title: titleText || `Gonitwa ${index + 1}`,
-                    distance: extractDistance(distanceText) || `${1200 + (index % 4) * 200}m`,
-                    prize: extractPrize(prizeText) || `${15000 + (index % 5) * 5000} zł`,
-                    status: 'upcoming',
-                    venue: 'Tor Służewiec',
-                    horses: generateRealisticHorses(index)
+                        races.push({
+                            id: `saturday_${index + 1}`,
+                            time: extractTime(timeText) || `${13 + index}:${index % 2 === 0 ? '00' : '30'}`,
+                            title: titleText || `Race ${index + 1}`,
+                            distance: extractDistance(distanceText) || `${1400 + (index % 3) * 200}m`,
+                            prize: extractPrize(prizeText) || `${20000 + index * 3000} zł`,
+                            status: 'upcoming',
+                            venue: 'Tor Służewiec',
+                            surface: index === 0 || index === 7 ? 'All-weather' : 'Turf',
+                            horses: generateSaturdayHorses(index)
+                        });
+                    }
                 });
-            });
+            }
 
             return races.length > 0 ? races : null;
         } catch (error) {
@@ -138,240 +105,175 @@ const HorseRacingApp = () => {
         }
     };
 
-    const parseFromTextContent = (html) => {
-        // Extract race information from plain text if structured elements aren't found
-        const races = [];
-        const timePattern = /(\d{1,2}):(\d{2})/g;
-        const matches = [...html.matchAll(timePattern)];
-
-        matches.forEach((match, index) => {
-            if (index < 10) { // Limit to reasonable number of races
-                races.push({
-                    id: `text_race_${index}`,
-                    day: index < 6 ? 'tomorrow' : 'sunday',
-                    time: match[0],
-                    title: `Gonitwa ${index + 1}`,
-                    distance: `${1400 + (index % 4) * 200}m`,
-                    prize: `${20000 + index * 2000} zł`,
-                    status: 'upcoming',
-                    venue: 'Tor Służewiec',
-                    horses: generateRealisticHorses(index)
-                });
-            }
-        });
-
-        return races.length > 0 ? races : null;
-    };
-
-    const transformPolishAPIData = (data) => {
-        if (!data || !Array.isArray(data)) return null;
-
-        return data.map((race, index) => ({
-            id: race.raceId || `api_race_${index}`,
-            day: race.raceDate === getTomorrowDate() ? 'tomorrow' : 'sunday',
-            time: race.raceTime || `${13 + index}:00`,
-            title: race.raceName || `Gonitwa ${index + 1}`,
-            distance: race.distance || '1400m',
-            prize: race.totalPrize || '20000 zł',
-            status: race.status || 'upcoming',
-            venue: race.track || 'Tor Służewiec',
-            horses: race.horses ? transformHorsesData(race.horses) : generateRealisticHorses(index)
-        }));
-    };
-
-    const transformHorsesData = (horsesData) => {
-        return horsesData.map((horse, index) => ({
-            nr: horse.number || index + 1,
-            name: horse.name || `Koń ${index + 1}`,
-            jockey: horse.jockey || generatePolishJockey(),
-            weight: horse.weight || (54 + Math.floor(Math.random() * 8)),
-            odds: horse.odds || (2 + Math.random() * 8).toFixed(1),
-            owner: horse.owner || generatePolishOwner(),
-            trainer: horse.trainer || generatePolishTrainer(),
-            age: horse.age || (2 + Math.floor(Math.random() * 6)),
-            form: horse.recentForm || generateForm(),
-            position: index + 1
-        }));
-    };
-
-    const loadRealisticSluzewiecData = () => {
-        const tomorrowRaces = [
+    const loadSaturdayRacingData = () => {
+        const saturdayRaces = [
             {
-                id: 'sluzewiec_tomorrow_1',
-                day: 'tomorrow',
+                id: 'saturday_1',
                 time: '13:00',
-                title: 'Gonitwa dla 2-letnich koni II grupy hodowli krajowej wpisanych do Polskiej Księgi Stadnej Koni Pełnej Krwi Angielskiej (PSB) - seria A',
+                title: '2-year-old Horses Group II - Domestic Breeding (PSB) Series A',
                 distance: '1400m',
-                prize: '21 000 zł',
+                prize: '21,000 zł',
                 status: 'upcoming',
                 venue: 'Tor Służewiec',
-                category: 'Grupa II',
-                surface: 'Trawa',
+                surface: 'Turf',
+                category: 'Group II',
                 horses: [
-                    { nr: 1, name: 'Słodka Czekolada', jockey: 'A. Reznikov', weight: 56, odds: '3.2', owner: 'D., I. i M. Jaskólscy', trainer: 'W. Olkowski', age: 2, form: '1-2-1', position: 1 },
-                    { nr: 2, name: 'Granada', jockey: 'T. Kumarbek Uulu', weight: 56, odds: '4.5', owner: 'PPH Falba', trainer: 'J. Kozłowski', age: 2, form: '2-1-3', position: 2 },
-                    { nr: 3, name: 'Oakley Martini', jockey: 'M. Zholchubekov', weight: 56, odds: '2.8', owner: 'UAB Žirgo Startas', trainer: 'T. Pastuszka', age: 2, form: '1-1-2', position: 3 },
-                    { nr: 4, name: 'Katla', jockey: 'B. Marat Uulu', weight: 56, odds: '5.1', owner: 'SK Iwno i A. Skrzypczak', trainer: 'I. Karathanasis', age: 2, form: '3-2-4', position: 4 },
-                    { nr: 5, name: 'Likya', jockey: 'K. Mazur', weight: 56, odds: '6.8', owner: 'M. Kaszubowski', trainer: 'C. Pawlak', age: 2, form: '4-3-1', position: 5 },
-                    { nr: 6, name: 'Thunder Storm', jockey: 'K. Grzybowski', weight: 57, odds: '7.2', owner: 'A., M. i P. Laskowscy', trainer: 'A. Laskowski', age: 2, form: '2-4-3', position: 6 }
+                    { nr: 1, name: 'Sweet Chocolate', jockey: 'A. Reznikov', weight: 56, odds: '3.2', owner: 'Jaskólski Family', trainer: 'W. Olkowski', age: 2, form: '1-2-1', silks: '🟡⚫' },
+                    { nr: 2, name: 'Granada', jockey: 'T. Kumarbek Uulu', weight: 56, odds: '4.5', owner: 'PPH Falba', trainer: 'J. Kozłowski', age: 2, form: '2-1-3', silks: '🔵⚪' },
+                    { nr: 3, name: 'Oakley Martini', jockey: 'M. Zholchubekov', weight: 56, odds: '2.8', owner: 'UAB Žirgo Startas', trainer: 'T. Pastuszka', age: 2, form: '1-1-2', silks: '🟢⚫' },
+                    { nr: 4, name: 'Katla', jockey: 'B. Marat Uulu', weight: 56, odds: '5.1', owner: 'SK Iwno & A. Skrzypczak', trainer: 'I. Karathanasis', age: 2, form: '3-2-4', silks: '🔴⚪' },
+                    { nr: 5, name: 'Likya', jockey: 'K. Mazur', weight: 56, odds: '6.8', owner: 'M. Kaszubowski', trainer: 'C. Pawlak', age: 2, form: '4-3-1', silks: '🟣⚫' },
+                    { nr: 6, name: 'Thunder Storm', jockey: 'K. Grzybowski', weight: 57, odds: '7.2', owner: 'Laskowski Family', trainer: 'A. Laskowski', age: 2, form: '2-4-3', silks: '⚫🟡' },
+                    { nr: 7, name: 'Targoszyn', jockey: 'E. Zamudin Uulu', weight: 57, odds: '8.5', owner: 'M. Sołtysiak', trainer: 'A. Laskowski', age: 2, form: '5-3-2', silks: '🟠⚪' }
                 ]
             },
             {
-                id: 'sluzewiec_tomorrow_2',
-                day: 'tomorrow',
+                id: 'saturday_2',
                 time: '13:30',
-                title: 'Nagroda Michałowa – (kat. A) - Gonitwa międzynarodowa dla 4-letnich i starszych koni czystej krwi arabskiej',
+                title: 'Michałowa Prize - Category A (International Arabian Horses)',
                 distance: '2800m',
-                prize: '56 000 zł',
+                prize: '56,000 zł',
                 status: 'upcoming',
                 venue: 'Tor Służewiec',
-                category: 'Kategoria A',
-                surface: 'Trawa',
+                surface: 'Turf',
+                category: 'Category A',
                 horses: [
-                    { nr: 1, name: 'Monaasib (GB)', jockey: 'K. Dogdurbek Uulu', weight: 62, odds: '2.5', owner: 'Junior Speed srl', trainer: 'M. Jodłowski', age: 6, form: '1-2-1', position: 1 },
-                    { nr: 2, name: "Eyd'a Alfash", jockey: 'B. Kalysbek Uulu', weight: 60, odds: '3.8', owner: 'M. Dąbrowski i M. Nieznańska', trainer: 'K. Rogowski', age: 5, form: '2-1-2', position: 2 },
-                    { nr: 3, name: 'Lindahls Anakin (DK)', jockey: 'K. Mazur', weight: 62, odds: '4.2', owner: 'A. Lindahl', trainer: 'C. Pawlak', age: 5, form: '1-3-1', position: 3 },
-                    { nr: 4, name: 'Cabaliros (FR)', jockey: 'S. Abaev', weight: 59, odds: '5.5', owner: 'A. Jabłońska-Kostrzewa', trainer: 'K. Rogowski', age: 4, form: '3-1-4', position: 4 }
+                    { nr: 1, name: 'Monaasib (GB)', jockey: 'K. Dogdurbek Uulu', weight: 62, odds: '2.5', owner: 'Junior Speed srl', trainer: 'M. Jodłowski', age: 6, form: '1-2-1', silks: '🔵🟡' },
+                    { nr: 2, name: "Eyd'a Alfash", jockey: 'B. Kalysbek Uulu', weight: 60, odds: '3.8', owner: 'M. Dąbrowski & M. Nieznańska', trainer: 'K. Rogowski', age: 5, form: '2-1-2', silks: '⚪🔴' },
+                    { nr: 3, name: 'Lindahls Anakin (DK)', jockey: 'K. Mazur', weight: 62, odds: '4.2', owner: 'A. Lindahl', trainer: 'C. Pawlak', age: 5, form: '1-3-1', silks: '🟢⚪' },
+                    { nr: 4, name: 'Cabaliros (FR)', jockey: 'S. Abaev', weight: 59, odds: '5.5', owner: 'A. Jabłońska-Kostrzewa', trainer: 'K. Rogowski', age: 4, form: '3-1-4', silks: '🟣🟡' },
+                    { nr: 5, name: 'Largo Winch', jockey: 'E. Zamudin Uulu', weight: 59, odds: '6.2', owner: 'T. Mikołajczyk & K. Urbańczyk', trainer: 'K. Urbańczyk', age: 4, form: '2-3-2', silks: '⚫🔵' },
+                    { nr: 6, name: 'Formuła MS', jockey: 'S. Mura', weight: 60, odds: '7.1', owner: 'M. Stelmaszczyk', trainer: 'A. Wyrzyk', age: 5, form: '4-2-3', silks: '🟠⚫' }
                 ]
             },
             {
-                id: 'sluzewiec_tomorrow_3',
-                day: 'tomorrow',
+                id: 'saturday_3',
                 time: '14:00',
-                title: 'Gonitwa dla 2-letnich koni II grupy hodowli krajowej wpisanych do Polskiej Księgi Stadnej Koni Pełnej Krwi Angielskiej (PSB) - seria B',
+                title: '2-year-old Horses Group II - Domestic Breeding (PSB) Series B',
                 distance: '1400m',
-                prize: '21 000 zł',
+                prize: '21,000 zł',
                 status: 'upcoming',
                 venue: 'Tor Służewiec',
-                category: 'Grupa II',
-                surface: 'Trawa',
+                surface: 'Turf',
+                category: 'Group II',
                 horses: [
-                    { nr: 1, name: 'Szekla', jockey: 'K. Mazur', weight: 56, odds: '3.1', owner: 'SK Iwno i N. Szelągowska', trainer: 'N. Szelągowska', age: 2, form: '1-2-1', position: 1 },
-                    { nr: 2, name: 'Thulio', jockey: 'K. Grzybowski', weight: 57, odds: '2.9', owner: 'A. i M. Rybaczyk', trainer: 'A. Laskowski', age: 2, form: '2-1-1', position: 2 },
-                    { nr: 3, name: 'Damina', jockey: 'B. Marat Uulu', weight: 56, odds: '4.3', owner: 'SK Iwno i A. Skrzypczak', trainer: 'I. Karathanasis', age: 2, form: '1-3-2', position: 3 }
-                ]
-            }
-        ];
-
-        const sundayRaces = [
-            {
-                id: 'sluzewiec_sunday_1',
-                day: 'sunday',
-                time: '13:00',
-                title: 'Nagroda Fair Play (Specjalna) - Gonitwa międzynarodowa dla 3-letnich i starszych kłusaków francuskich (sulki)',
-                distance: '2400m',
-                prize: '16 000 zł',
-                status: 'upcoming',
-                venue: 'Tor Służewiec',
-                category: 'Specjalna',
-                surface: 'Żużel',
-                horses: [
-                    { nr: 1, name: 'Gobs', jockey: 'D. Bińkowska', weight: 0, odds: '3.5', owner: 'D. Bińkowska, A. Frontczak-Salivonchyk', trainer: 'A. Frontczak-Salivonchyk', age: 9, form: '1-2-3', position: 1 },
-                    { nr: 2, name: 'Katko Gede (FR)', jockey: 'M. Wasiak', weight: 0, odds: '4.1', owner: 'L., M. i R. Melinger, A. i T. Wasiak', trainer: 'M. Wasiak', age: 5, form: '2-1-2', position: 2 },
-                    { nr: 3, name: 'Kaline Restelan (FR)', jockey: 'W. Pandel', weight: 0, odds: '5.2', owner: 'W. Pandel', trainer: 'W. Pandel', age: 5, form: '3-2-1', position: 3 }
+                    { nr: 1, name: 'Szekla', jockey: 'K. Mazur', weight: 56, odds: '3.1', owner: 'SK Iwno & N. Szelągowska', trainer: 'N. Szelągowska', age: 2, form: '1-2-1', silks: '🔴⚪' },
+                    { nr: 2, name: 'Thulio', jockey: 'K. Grzybowski', weight: 57, odds: '2.9', owner: 'Rybaczyk Family', trainer: 'A. Laskowski', age: 2, form: '2-1-1', silks: '🟡🔵' },
+                    { nr: 3, name: 'Damina', jockey: 'B. Marat Uulu', weight: 56, odds: '4.3', owner: 'SK Iwno & A. Skrzypczak', trainer: 'I. Karathanasis', age: 2, form: '1-3-2', silks: '🟢⚫' },
+                    { nr: 4, name: 'Nagi Instynkt', jockey: 'K. Kamińska', weight: 57, odds: '5.8', owner: 'Multiple Owners', trainer: 'W. Szymczuk', age: 2, form: '3-4-3', silks: '🟣⚪' },
+                    { nr: 5, name: 'Dexa Star', jockey: 'B. Kalysbek Uulu', weight: 56, odds: '6.4', owner: 'M. Krzysztofik', trainer: 'M. Łojek', age: 2, form: '2-3-4', silks: '🔵⚫' }
                 ]
             },
             {
-                id: 'sluzewiec_sunday_2',
-                day: 'sunday',
-                time: '13:30',
-                title: 'Gonitwa dla 3-letnich koni czystej krwi arabskiej II grupy hodowli krajowej wpisanych do Polskiej Księgi Stadnej Koni Arabskich Czystej Krwi (PASB) - seria B',
+                id: 'saturday_4',
+                time: '14:30',
+                title: '3-year-old Arabian Horses Group II - Domestic Breeding (PASB) Series A',
                 distance: '1800m',
-                prize: '19 000 zł',
+                prize: '19,000 zł',
                 status: 'upcoming',
                 venue: 'Tor Służewiec',
-                category: 'Grupa II',
-                surface: 'Trawa',
+                surface: 'Turf',
+                category: 'Group II',
                 horses: [
-                    { nr: 1, name: 'Wans', jockey: 'M. Zholchubekov', weight: 58, odds: '3.7', owner: 'R. Ptach', trainer: 'S. Vasyutov', age: 3, form: '1-2-1', position: 1 },
-                    { nr: 2, name: 'Ghost Djeeli', jockey: 'A. Sienkiewicz', weight: 58, odds: '4.5', owner: 'P. Piotrowski', trainer: 'S. Vasyutov', age: 3, form: '2-1-3', position: 2 }
+                    { nr: 1, name: 'Erama', jockey: 'M. Zholchubekov', weight: 56, odds: '4.1', owner: 'Z. Górski', trainer: 'M. Janikowski', age: 3, form: '2-1-3', silks: '🟢🟡' },
+                    { nr: 2, name: 'Zartan', jockey: 'S. Vasyutov', weight: 58, odds: '3.7', owner: 'B. Maślanka', trainer: 'S. Vasyutov', age: 3, form: '1-2-2', silks: '⚫🔴' },
+                    { nr: 3, name: 'Weiss', jockey: 'T. Kumarbek Uulu', weight: 58, odds: '5.2', owner: 'Ptach Family', trainer: 'S. Vasyutov', age: 3, form: '3-1-4', silks: '⚪🔵' },
+                    { nr: 4, name: 'Haedus', jockey: 'K. Mazur', weight: 58, odds: '3.9', owner: 'Pawlak Family', trainer: 'C. Pawlak', age: 3, form: '1-3-1', silks: '🟣⚪' }
+                ]
+            },
+            {
+                id: 'saturday_5',
+                time: '15:00',
+                title: 'Vistula River Prize - Category B (Fillies & Mares)',
+                distance: '2000m',
+                prize: '50,000 zł',
+                status: 'upcoming',
+                venue: 'Tor Służewiec',
+                surface: 'Turf',
+                category: 'Category B',
+                horses: [
+                    { nr: 1, name: 'Demoon (FR)', jockey: 'K. Grzybowski', weight: 53, odds: '4.8', owner: 'R. Shaykhutdinov', trainer: 'E. Zahariev', age: 3, form: '2-3-1', silks: '🔵⚫' },
+                    { nr: 2, name: 'Sunny Silence (USA)', jockey: 'E. Zamudin Uulu', weight: 56, odds: '2.9', owner: 'Millennium Stud', trainer: 'M. Jodłowski', age: 3, form: '1-1-2', silks: '🟡🔴' },
+                    { nr: 3, name: 'Enchanted Way (GB)', jockey: 'K. Dogdurbek Uulu', weight: 53, odds: '3.5', owner: 'Plavac Sp. z o.o.', trainer: 'S. Plavac', age: 3, form: '2-2-1', silks: '🟢⚪' },
+                    { nr: 4, name: 'Galicove (FR)', jockey: 'S. Abaev', weight: 53, odds: '5.1', owner: 'Millennium Stud', trainer: 'K. Ziemiański', age: 3, form: '1-4-3', silks: '🟠🔵' }
+                ]
+            },
+            {
+                id: 'saturday_6',
+                time: '15:30',
+                title: 'Handicap Race Group IV (3yo & older)',
+                distance: '2200m',
+                prize: '13,800 zł',
+                status: 'upcoming',
+                venue: 'Tor Służewiec',
+                surface: 'Turf',
+                category: 'Group IV Handicap',
+                horses: [
+                    { nr: 1, name: 'So Ellmar (FR)', jockey: 'B. Kalysbek Uulu', weight: 57, odds: '3.8', owner: 'R. Shaykhutdinov', trainer: 'E. Zahariev', age: 3, form: '1-2-3', silks: '🔴🟡' },
+                    { nr: 2, name: 'Rue Boutebrie (FR)', jockey: 'M. Przybek', weight: 62, odds: '4.5', owner: 'A. Przybek', trainer: 'W. Olkowski', age: 3, form: '2-1-4', silks: '🟣⚪' },
+                    { nr: 3, name: 'Zibi Dancer (FR)', jockey: 'K. Zwolińska', weight: 61, odds: '2.9', owner: 'Z. Górski', trainer: 'K. Ziemiański', age: 3, form: '1-1-2', silks: '🔵⚫' }
+                ]
+            },
+            {
+                id: 'saturday_7',
+                time: '16:00',
+                title: 'Eldon Prize - Arabian Horses Group I Domestic Breeding',
+                distance: '2000m',
+                prize: '23,000 zł',
+                status: 'upcoming',
+                venue: 'Tor Służewiec',
+                surface: 'Turf',
+                category: 'Group I',
+                horses: [
+                    { nr: 1, name: 'Super Story TR', jockey: 'S. Vasyutov', weight: 56, odds: '4.2', owner: 'T. Ruciński & A. Sienkiewicz', trainer: 'S. Vasyutov', age: 3, form: '1-3-2', silks: '⚪🟢' },
+                    { nr: 2, name: 'Dekhal FA', jockey: 'B. Kalysbek Uulu', weight: 58, odds: '3.1', owner: 'K. Goździalski', trainer: 'M. Borkowski', age: 3, form: '2-1-1', silks: '🟡⚫' },
+                    { nr: 3, name: 'Stefanos', jockey: 'K. Grzybowski', weight: 58, odds: '5.8', owner: 'SK Janów Podlaski', trainer: 'P. Nakoniechnyi', age: 3, form: '3-2-4', silks: '🔴⚪' }
+                ]
+            },
+            {
+                id: 'saturday_8',
+                time: '16:30',
+                title: 'Special Handicap Group IV - Arabian Horses (4yo & older)',
+                distance: '1800m',
+                prize: '12,000 zł',
+                status: 'upcoming',
+                venue: 'Tor Služewiec',
+                surface: 'All-weather',
+                category: 'Group IV Special',
+                horses: [
+                    { nr: 1, name: 'Niemen Nuit', jockey: 'K. Świat', weight: 52, odds: '5.2', owner: 'T. Pastuszka', trainer: 'T. Pastuszka', age: 4, form: '3-4-2', silks: '🟠🔵' },
+                    { nr: 2, name: 'Al-Dzaster', jockey: 'K. Kamińska', weight: 52, odds: '4.1', owner: 'K. Rogowski', trainer: 'K. Rogowski', age: 4, form: '2-3-1', silks: '🟣🟡' },
+                    { nr: 3, name: 'Astonishing Grace (FR)', jockey: 'E. Zamudin Uulu', weight: 63, odds: '2.8', owner: 'SK Andryjanki E. Sieciński', trainer: 'J. Domańska', age: 4, form: '1-1-3', silks: '🔵⚪' }
+                ]
+            },
+            {
+                id: 'saturday_9',
+                time: '17:00',
+                title: 'Race for 4-year-olds and older horses - Group IV only',
+                distance: '2000m',
+                prize: '13,800 zł',
+                status: 'upcoming',
+                venue: 'Tor Służewiec',
+                surface: 'Turf',
+                category: 'Group IV',
+                horses: [
+                    { nr: 1, name: 'Hornet (IRE)', jockey: 'K. Dogdurbek Uulu', weight: 60, odds: '3.2', owner: 'BMS Group S. Pegza', trainer: 'C. Fraisl', age: 4, form: '1-2-2', silks: '🟢⚫' },
+                    { nr: 2, name: 'Zuzza (IRE)', jockey: 'S. Urmatbek Uulu', weight: 55, odds: '4.8', owner: 'K. Kozłowska & K. Miondlikowski', trainer: 'J. Kozłowski', age: 4, form: '2-3-4', silks: '🔴🟡' },
+                    { nr: 3, name: 'Octola (IRE)', jockey: 'A. Reznikov', weight: 60, odds: '2.6', owner: 'A. Kabardov, S. Ochałek & K. Salamon', trainer: 'A. Kabardov', age: 6, form: '1-1-1', silks: '🟡🔵' }
                 ]
             }
         ];
 
-        const allRaces = [...tomorrowRaces, ...sundayRaces];
-        setRaces(allRaces);
-        setSelectedRace(tomorrowRaces[0]);
-        generateJockeyStats(allRaces);
+        setRaces(saturdayRaces);
+        setSelectedRace(saturdayRaces[0]);
+        generateJockeyStats(saturdayRaces);
         setLastUpdate(new Date());
     };
 
-    // Helper functions
-    const extractTime = (text) => {
-        const timeMatch = text.match(/(\d{1,2}):(\d{2})/);
-        return timeMatch ? timeMatch[0] : null;
-    };
-
-    const extractDistance = (text) => {
-        const distanceMatch = text.match(/(\d+)\s*m/i);
-        return distanceMatch ? distanceMatch[0] : null;
-    };
-
-    const extractPrize = (text) => {
-        const prizeMatch = text.match(/(\d+[\s,]*\d*)\s*(zł|PLN)/i);
-        return prizeMatch ? prizeMatch[0] : null;
-    };
-
-    const generateRealisticHorses = (raceIndex) => {
-        const polishHorseNames = [
-            'Burza Warszawska', 'Złoty Orzeł', 'Wisła Champion', 'Królewski Grom', 'Mazowiecki Star',
-            'Biały Rycerz', 'Czarna Perła', 'Słoneczny Dzień', 'Górski Wiatr', 'Leśny Książe',
-            'Morska Fala', 'Srebrny Pocisk', 'Czerwony Baron', 'Zielona Nadzieja', 'Błękitny Sen'
-        ];
-
-        const polishJockeys = [
-            'K. Mazur', 'S. Abaev', 'T. Kumarbek Uulu', 'K. Grzybowski', 'B. Kalysbek Uulu',
-            'E. Zamudin Uulu', 'A. Reznikov', 'S. Mura', 'M. Zholchubekov', 'K. Dogdurbek Uulu',
-            'D. Sabatbekov', 'S. Vasyutov', 'A. Gil', 'K. Kamińska', 'M. Przybek'
-        ];
-
-        const polishOwners = [
-            'SK Iwno', 'Stud Janów Podlaski', 'M. Stelmaszczyk', 'Polska AKF Sp. z o.o.',
-            'A. Laskowski', 'Z. Górski', 'Millennium Stud Sp. z o.o.', 'BMS Group S. Pegza',
-            'PPH Falba', 'SK Krasne', 'Plavac Sp. z o.o.', 'Junior Speed srl'
-        ];
-
-        const polishTrainers = [
-            'W. Olkowski', 'J. Kozłowski', 'T. Pastuszka', 'I. Karathanasis', 'C. Pawlak',
-            'A. Laskowski', 'N. Szelągowska', 'K. Rogowski', 'M. Jodłowski', 'S. Vasyutov'
-        ];
-
-        const horseCount = 4 + Math.floor(Math.random() * 6); // 4-9 horses per race
-
-        return Array.from({ length: horseCount }, (_, index) => ({
-            nr: index + 1,
-            name: polishHorseNames[(raceIndex * 3 + index) % polishHorseNames.length],
-            jockey: polishJockeys[index % polishJockeys.length],
-            weight: 54 + Math.floor(Math.random() * 8),
-            odds: (2 + Math.random() * 8).toFixed(1),
-            owner: polishOwners[index % polishOwners.length],
-            trainer: polishTrainers[index % polishTrainers.length],
-            age: 2 + Math.floor(Math.random() * 6),
-            form: generateForm(),
-            position: index + 1
-        }));
-    };
-
-    const generateForm = () => {
-        const positions = [1, 2, 3, 4, 5];
-        return Array.from({ length: 3 }, () =>
-            positions[Math.floor(Math.random() * positions.length)]
-        ).join('-');
-    };
-
-    const generatePolishJockey = () => {
-        const jockeys = ['K. Mazur', 'S. Abaev', 'T. Kumarbek Uulu', 'K. Grzybowski'];
-        return jockeys[Math.floor(Math.random() * jockeys.length)];
-    };
-
-    const generatePolishOwner = () => {
-        const owners = ['SK Iwno', 'M. Stelmaszczyk', 'Polska AKF Sp. z o.o.'];
-        return owners[Math.floor(Math.random() * owners.length)];
-    };
-
-    const generatePolishTrainer = () => {
-        const trainers = ['W. Olkowski', 'J. Kozłowski', 'C. Pawlak'];
-        return trainers[Math.floor(Math.random() * trainers.length)];
+    const generateSaturdayHorses = (raceIndex) => {
+        // This would generate horses based on the race index
+        // For now, we'll use the static data from loadSaturdayRacingData
+        return [];
     };
 
     const generateJockeyStats = (raceData) => {
@@ -384,13 +286,21 @@ const HorseRacingApp = () => {
                         name: horse.jockey,
                         wins: 0,
                         races: 0,
-                        earnings: 0
+                        earnings: 0,
+                        mounts: 0
                     };
                 }
                 jockeys[horse.jockey].races++;
-                if (horse.position <= 3) {
-                    jockeys[horse.jockey].wins++;
-                    jockeys[horse.jockey].earnings += [8000, 5000, 3000][horse.position - 1];
+                jockeys[horse.jockey].mounts++;
+
+                // Simulate wins based on odds (lower odds = more likely to win)
+                const oddsNum = parseFloat(horse.odds);
+                if (oddsNum < 4) {
+                    jockeys[horse.jockey].wins += Math.floor(Math.random() * 3) + 1;
+                    jockeys[horse.jockey].earnings += Math.floor(Math.random() * 15000) + 5000;
+                } else {
+                    jockeys[horse.jockey].wins += Math.floor(Math.random() * 2);
+                    jockeys[horse.jockey].earnings += Math.floor(Math.random() * 8000) + 2000;
                 }
             });
         });
@@ -398,7 +308,7 @@ const HorseRacingApp = () => {
         const sortedJockeys = Object.values(jockeys)
             .map(jockey => ({
                 ...jockey,
-                winRate: jockey.races > 0 ? ((jockey.wins / jockey.races) * 100).toFixed(1) : '0.0'
+                winRate: jockey.races > 0 ? ((jockey.wins / (jockey.races * 3)) * 100).toFixed(1) : '0.0'
             }))
             .sort((a, b) => b.wins - a.wins)
             .slice(0, 8);
@@ -406,44 +316,45 @@ const HorseRacingApp = () => {
         setJockeyStats(sortedJockeys);
     };
 
-    const getTomorrowDate = () => {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        return tomorrow.toISOString().split('T')[0];
+    // Helper functions
+    const extractTime = (text) => {
+        if (!text) return null;
+        const timeMatch = text.match(/(\d{1,2}):(\d{2})/);
+        return timeMatch ? timeMatch[0] : null;
     };
 
-    const getSundayDate = () => {
+    const extractDistance = (text) => {
+        if (!text) return null;
+        const distanceMatch = text.match(/(\d+)\s*m/i);
+        return distanceMatch ? distanceMatch[0] : null;
+    };
+
+    const extractPrize = (text) => {
+        if (!text) return null;
+        const prizeMatch = text.match(/(\d+[\s,]*\d*)\s*(zł|PLN)/i);
+        return prizeMatch ? prizeMatch[0] : null;
+    };
+
+    const getSaturdayDate = () => {
         const today = new Date();
-        const sunday = new Date(today);
-        const daysUntilSunday = 7 - today.getDay();
-        sunday.setDate(today.getDate() + (daysUntilSunday === 7 ? 0 : daysUntilSunday));
-        return sunday.toISOString().split('T')[0];
+        const saturday = new Date(today);
+        const daysUntilSaturday = (6 - today.getDay()) % 7;
+        saturday.setDate(today.getDate() + (daysUntilSaturday === 0 ? 7 : daysUntilSaturday));
+        return saturday.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
     };
-
-    const getPolishDayName = (day) => {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        const sunday = new Date();
-        const daysUntilSunday = 7 - sunday.getDay();
-        sunday.setDate(sunday.getDate() + (daysUntilSunday === 7 ? 0 : daysUntilSunday));
-
-        const dayNames = {
-            tomorrow: `${tomorrow.toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' })}`,
-            sunday: `${sunday.toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' })}`
-        };
-        return dayNames[day] || day;
-    };
-
-    const filteredRaces = races.filter(race => race.day === selectedDay);
 
     if (loading) {
         return (
             <div className="racing-app">
                 <div className="loading-container">
                     <div className="loading-spinner"></div>
-                    <p>Loading Służewiec race data...</p>
-                    <small>Fetching from torsluzewiec.pl...</small>
+                    <h2>Loading Służewiec Racing Data</h2>
+                    <p>Fetching Saturday's race program...</p>
                 </div>
             </div>
         );
@@ -454,236 +365,268 @@ const HorseRacingApp = () => {
             <header className="header">
                 <div className="header-content">
                     <div className="logo-section">
-                        <h1>🏇 TOR SŁUŻEWIEC</h1>
-                        <p>Horse Racing Program</p>
+                        <h1>🏇 SŁUŻEWIEC RACECOURSE</h1>
+                        <p>Saturday Race Program • Warsaw, Poland</p>
                     </div>
                     <div className="header-info">
-                        <div className="update-info">
-                            {lastUpdate && (
-                                <span>Last updated: {lastUpdate.toLocaleTimeString('en-GB')}</span>
-                            )}
-                            {error && <span className="error-badge">Using demo data</span>}
+                        <div className="race-date">
+                            <span className="date-label">📅 {getSaturdayDate()}</span>
                         </div>
-                        <div className="live-status">
-                            <span className="status-indicator"></span>
-                            Live Data
+                        <div className="update-status">
+                            {lastUpdate && (
+                                <span>Last update: {lastUpdate.toLocaleTimeString()}</span>
+                            )}
+                            {error && <span className="error-badge">Demo Mode</span>}
                         </div>
                     </div>
                 </div>
             </header>
 
-            <nav className="day-selector">
-                <button
-                    className={selectedDay === 'tomorrow' ? 'active' : ''}
-                    onClick={() => setSelectedDay('tomorrow')}
-                >
-                    📅 {getPolishDayName('tomorrow')}
-                </button>
-                <button
-                    className={selectedDay === 'sunday' ? 'active' : ''}
-                    onClick={() => setSelectedDay('sunday')}
-                >
-                    📅 {getPolishDayName('sunday')}
-                </button>
-            </nav>
-
             <div className="content">
-                <div className="race-sidebar">
-                    <h2>🏁 Racing Schedule</h2>
+                <aside className="race-sidebar">
+                    <div className="sidebar-header">
+                        <h2>🏁 Today's Races</h2>
+                        <p>{races.length} races scheduled</p>
+                    </div>
+
                     <div className="race-list">
-                        {filteredRaces.map(race => (
+                        {races.map((race, index) => (
                             <div
                                 key={race.id}
                                 className={`race-item ${selectedRace?.id === race.id ? 'active' : ''}`}
                                 onClick={() => setSelectedRace(race)}
                             >
-                                <div className="race-number">{race.id.split('_').pop()}</div>
-                                <div className="race-details">
+                                <div className="race-number">{index + 1}</div>
+                                <div className="race-content">
                                     <div className="race-time">⏰ {race.time}</div>
                                     <div className="race-title">{race.title}</div>
-                                    <div className="race-info">
+                                    <div className="race-metadata">
                                         <span className="distance">📏 {race.distance}</span>
                                         <span className="prize">💰 {race.prize}</span>
                                     </div>
-                                    <div className="race-surface">🌱 {race.surface || 'Grass'}</div>
+                                    <div className="race-surface">
+                    <span className={`surface-tag ${race.surface.toLowerCase()}`}>
+                      {race.surface === 'Turf' ? '🌱' : '🏁'} {race.surface}
+                    </span>
+                                    </div>
                                 </div>
                             </div>
                         ))}
                     </div>
+                </aside>
 
-                    {filteredRaces.length === 0 && (
-                        <div className="no-races">
-                            <p>No races scheduled for {selectedDay === 'tomorrow' ? 'tomorrow' : 'Sunday'}</p>
-                            <button onClick={fetchSluzewiecData}>🔄 Refresh Data</button>
-                        </div>
-                    )}
-                </div>
-
-                <div className="main-panel">
+                <main className="main-content">
                     {selectedRace ? (
                         <div className="race-details">
-                            <div className="race-header">
-                                <h2>🏆 {selectedRace.title}</h2>
-                                <div className="race-meta">
-                                    <div className="meta-item">
-                                        <span className="meta-label">⏰ Time:</span>
-                                        <span className="meta-value">{selectedRace.time}</span>
-                                    </div>
-                                    <div className="meta-item">
-                                        <span className="meta-label">📏 Distance:</span>
-                                        <span className="meta-value">{selectedRace.distance}</span>
-                                    </div>
-                                    <div className="meta-item">
-                                        <span className="meta-label">💰 Prize Pool:</span>
-                                        <span className="meta-value">{selectedRace.prize}</span>
-                                    </div>
-                                    <div className="meta-item">
-                                        <span className="meta-label">🏁 Track:</span>
-                                        <span className="meta-value">{selectedRace.venue}</span>
-                                    </div>
-                                    <div className="meta-item">
-                                        <span className="meta-label">🌱 Surface:</span>
-                                        <span className="meta-value">{selectedRace.surface || 'Grass'}</span>
-                                    </div>
-                                    <div className="meta-item">
-                                        <span className="meta-label">📊 Category:</span>
-                                        <span className="meta-value">{selectedRace.category || 'Standard'}</span>
+                            <header className="race-header">
+                                <div className="race-title-section">
+                                    <h2>🏆 {selectedRace.title}</h2>
+                                    <div className="race-badges">
+                                        <span className="category-badge">{selectedRace.category}</span>
+                                        <span className="surface-badge">{selectedRace.surface}</span>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="horses-section">
-                                <h3>🐎 Starting List</h3>
+                                <div className="race-info-grid">
+                                    <div className="info-card">
+                                        <div className="info-icon">⏰</div>
+                                        <div className="info-content">
+                                            <span className="info-label">Post Time</span>
+                                            <span className="info-value">{selectedRace.time}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="info-card">
+                                        <div className="info-icon">📏</div>
+                                        <div className="info-content">
+                                            <span className="info-label">Distance</span>
+                                            <span className="info-value">{selectedRace.distance}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="info-card">
+                                        <div className="info-icon">💰</div>
+                                        <div className="info-content">
+                                            <span className="info-label">Prize Money</span>
+                                            <span className="info-value">{selectedRace.prize}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="info-card">
+                                        <div className="info-icon">🏁</div>
+                                        <div className="info-content">
+                                            <span className="info-label">Surface</span>
+                                            <span className="info-value">{selectedRace.surface}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </header>
+
+                            <section className="horses-section">
+                                <h3>🐎 Field & Runners</h3>
+
                                 <div className="horses-table">
                                     <div className="table-header">
-                                        <div className="col-nr">#</div>
+                                        <div className="col-number">#</div>
+                                        <div className="col-silks">Silks</div>
                                         <div className="col-horse">Horse</div>
                                         <div className="col-jockey">Jockey</div>
                                         <div className="col-weight">Weight</div>
                                         <div className="col-odds">Odds</div>
-                                        <div className="col-owner">Owner</div>
-                                        <div className="col-trainer">Trainer</div>
                                         <div className="col-age">Age</div>
                                         <div className="col-form">Form</div>
+                                        <div className="col-trainer">Trainer</div>
                                     </div>
 
-                                    {selectedRace.horses.map(horse => (
-                                        <div key={horse.nr} className="horse-row">
-                                            <div className="col-nr">
-                                                <span className="horse-number">{horse.nr}</span>
+                                    <div className="horses-list">
+                                        {selectedRace.horses.map((horse, index) => (
+                                            <div key={horse.nr} className={`horse-row ${index < 3 ? 'top-three' : ''}`}>
+                                                <div className="col-number">
+                                                    <span className="horse-number">{horse.nr}</span>
+                                                </div>
+
+                                                <div className="col-silks">
+                                                    <span className="silks" title="Racing silks">{horse.silks}</span>
+                                                </div>
+
+                                                <div className="col-horse">
+                                                    <div className="horse-info">
+                                                        <strong className="horse-name">{horse.name}</strong>
+                                                        <span className="owner-name">{horse.owner}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="col-jockey">
+                                                    <span className="jockey-name">{horse.jockey}</span>
+                                                </div>
+
+                                                <div className="col-weight">
+                          <span className="weight-value">
+                            {horse.weight > 0 ? `${horse.weight}kg` : '—'}
+                          </span>
+                                                </div>
+
+                                                <div className="col-odds">
+                          <span className={`odds-value ${parseFloat(horse.odds) < 4 ? 'favorite' : ''}`}>
+                            {horse.odds}
+                          </span>
+                                                </div>
+
+                                                <div className="col-age">
+                                                    <span className="age-value">{horse.age}yo</span>
+                                                </div>
+
+                                                <div className="col-form">
+                                                    <span className="form-value">{horse.form}</span>
+                                                </div>
+
+                                                <div className="col-trainer">
+                                                    <span className="trainer-name">{horse.trainer}</span>
+                                                </div>
                                             </div>
-                                            <div className="col-horse">
-                                                <strong className="horse-name">{horse.name}</strong>
-                                            </div>
-                                            <div className="col-jockey">
-                                                <span className="jockey-name">{horse.jockey}</span>
-                                            </div>
-                                            <div className="col-weight">
-                        <span className="weight-value">
-                          {horse.weight > 0 ? `${horse.weight}kg` : '—'}
-                        </span>
-                                            </div>
-                                            <div className="col-odds">
-                                                <span className="odds-value">{horse.odds}</span>
-                                            </div>
-                                            <div className="col-owner">
-                                                <span className="owner-name">{horse.owner}</span>
-                                            </div>
-                                            <div className="col-trainer">
-                                                <span className="trainer-name">{horse.trainer}</span>
-                                            </div>
-                                            <div className="col-age">
-                                                <span className="age-value">{horse.age}y</span>
-                                            </div>
-                                            <div className="col-form">
-                                                <span className="form-value">{horse.form}</span>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            </section>
                         </div>
                     ) : (
                         <div className="no-selection">
-                            <div className="no-selection-content">
-                                <h2>🏇 Select a Race</h2>
-                                <p>Choose a race from the schedule to view details</p>
-                                <div className="selection-icon">🏁</div>
+                            <div className="selection-prompt">
+                                <div className="prompt-icon">🏇</div>
+                                <h2>Select a Race</h2>
+                                <p>Choose a race from the schedule to view the field and betting information</p>
                             </div>
                         </div>
                     )}
-                </div>
+                </main>
 
-                <div className="sidebar">
-                    <div className="leaderboard-section">
+                <aside className="stats-sidebar">
+                    <div className="jockey-leaderboard">
                         <h3>🏆 Top Jockeys</h3>
-                        <div className="leaderboard">
+                        <div className="leaderboard-list">
                             {jockeyStats.map((jockey, index) => (
-                                <div key={jockey.name} className="leaderboard-item">
-                                    <div className="rank">{index + 1}</div>
+                                <div key={jockey.name} className="jockey-item">
+                                    <div className={`rank ${index < 3 ? `position-${index + 1}` : ''}`}>
+                                        {index + 1}
+                                    </div>
                                     <div className="jockey-details">
                                         <div className="jockey-name">{jockey.name}</div>
                                         <div className="jockey-stats">
-                                            <span>🏆 {jockey.wins} wins</span>
-                                            <span>📊 {jockey.winRate}%</span>
+                                            <span className="wins">🏆 {jockey.wins} wins</span>
+                                            <span className="rate">📊 {jockey.winRate}%</span>
                                         </div>
-                                        <div className="jockey-earnings">💰 {jockey.earnings.toLocaleString()} zł</div>
+                                        <div className="earnings">💰 {jockey.earnings.toLocaleString()} zł</div>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    <div className="info-section">
+                    <div className="track-info">
                         <h3>ℹ️ Track Information</h3>
-                        <div className="track-info">
-                            <div className="info-item">
-                                <span className="info-label">🏁 Track:</span>
-                                <span>Tor Służewiec</span>
+                        <div className="info-list">
+                            <div className="info-row">
+                                <span className="label">🏁 Track:</span>
+                                <span className="value">Tor Służewiec</span>
                             </div>
-                            <div className="info-item">
-                                <span className="info-label">📍 Location:</span>
-                                <span>Warsaw, Poland</span>
+                            <div className="info-row">
+                                <span className="label">📍 Location:</span>
+                                <span className="value">Warsaw, Poland</span>
                             </div>
-                            <div className="info-item">
-                                <span className="info-label">🌐 Website:</span>
+                            <div className="info-row">
+                                <span className="label">📞 Phone:</span>
+                                <span className="value">+48 22 851 45 95</span>
+                            </div>
+                            <div className="info-row">
+                                <span className="label">🌐 Website:</span>
                                 <a href="https://torsluzewiec.pl" target="_blank" rel="noopener noreferrer">
                                     torsluzewiec.pl
                                 </a>
                             </div>
-                            <div className="info-item">
-                                <span className="info-label">🎰 Betting:</span>
+                            <div className="info-row">
+                                <span className="label">🎰 Betting:</span>
                                 <a href="https://trafonline.pl" target="_blank" rel="noopener noreferrer">
                                     TRAF Online
                                 </a>
                             </div>
                         </div>
                     </div>
-                </div>
+
+                    <div className="refresh-section">
+                        <button className="refresh-btn" onClick={fetchSluzewiecData}>
+                            🔄 Refresh Data
+                        </button>
+                        <p className="refresh-note">
+                            Data updates automatically every 10 minutes
+                        </p>
+                    </div>
+                </aside>
             </div>
 
             <footer className="footer">
                 <div className="footer-content">
                     <div className="footer-section">
                         <h4>🏇 Tor Służewiec</h4>
-                        <p>ul. Puławska 266, Warsaw</p>
-                        <p>📞 +48 22 851 45 95</p>
+                        <p>Premier horse racing venue in Poland</p>
+                        <p>ul. Puławska 266, 02-976 Warsaw</p>
                     </div>
+
                     <div className="footer-section">
-                        <h4>🎰 TRAF Betting</h4>
-                        <p>Official betting partner</p>
-                        <p>Bet responsibly</p>
+                        <h4>🎰 Betting Partners</h4>
+                        <p>TRAF - Official totalizator</p>
+                        <p>Bet responsibly • 18+</p>
                     </div>
+
                     <div className="footer-section">
-                        <h4>ℹ️ Information</h4>
-                        <p>Data updates every 5 minutes</p>
-                        <p>Schedule subject to change</p>
+                        <h4>📱 Stay Connected</h4>
+                        <p>Follow us for live updates</p>
+                        <p>Race results & news</p>
                     </div>
-                    <div className="footer-section">
-                        <h4>🔗 Quick Links</h4>
-                        <p><a href="#" onClick={() => fetchSluzewiecData()}>Refresh Data</a></p>
-                        <p><a href="https://torsluzewiec.pl" target="_blank" rel="noopener noreferrer">Official Site</a></p>
-                    </div>
+                </div>
+
+                <div className="footer-bottom">
+                    <p>&copy; 2025 Tor Służewiec Racing App. All rights reserved.</p>
+                    <p>Race data subject to change • Check official sources</p>
                 </div>
             </footer>
         </div>
