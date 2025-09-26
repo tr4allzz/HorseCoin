@@ -1,0 +1,539 @@
+/* HorseRacingApp.css */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+}
+
+.racing-app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.header {
+    background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
+    color: white;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.header h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.header-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.1rem;
+}
+
+.header-info .date {
+    font-weight: 600;
+}
+
+.header-info .status {
+    background: #e74c3c;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.separator {
+    color: #bdc3c7;
+}
+
+/* Navigation Tabs */
+.nav-tabs {
+    background: white;
+    border-bottom: 2px solid #ddd;
+    display: flex;
+    padding: 0 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.nav-tabs button {
+    background: none;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #666;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs button:hover {
+    background: #f8f9fa;
+    color: #2d5a3d;
+}
+
+.nav-tabs button.active {
+    color: #2d5a3d;
+    border-bottom-color: #2d5a3d;
+    background: #f8f9fa;
+}
+
+/* Main Content */
+.content {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 300px 1fr 350px;
+    gap: 2rem;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Race Selection */
+.race-selection {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    height: fit-content;
+}
+
+.race-selection h2 {
+    color: #2d5a3d;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.race-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.race-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.race-item:hover {
+    border-color: #2d5a3d;
+    background: #f8f9fa;
+}
+
+.race-item.active {
+    border-color: #2d5a3d;
+    background: #2d5a3d;
+    color: white;
+}
+
+.race-number {
+    background: #2d5a3d;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.race-item.active .race-number {
+    background: white;
+    color: #2d5a3d;
+}
+
+.race-details {
+    flex: 1;
+}
+
+.race-time {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
+}
+
+.race-title {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.8;
+}
+
+.race-info {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+.prize {
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+/* Main Content Panel */
+.race-details-panel {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.race-details-panel h3 {
+    color: #2d5a3d;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.race-info-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #2d5a3d;
+}
+
+.race-info-header span {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.race-info-header .distance {
+    font-weight: 600;
+    color: #2d5a3d;
+}
+
+.race-info-header .prize {
+    color: #e74c3c;
+    font-weight: 700;
+}
+
+/* Horses Table */
+.horses-table {
+    width: 100%;
+}
+
+.table-header {
+    display: grid;
+    grid-template-columns: 50px 2fr 1.5fr 80px 100px 2fr 80px;
+    gap: 1rem;
+    padding: 1rem;
+    background: #2d5a3d;
+    color: white;
+    border-radius: 6px 6px 0 0;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.horse-row {
+    display: grid;
+    grid-template-columns: 50px 2fr 1.5fr 80px 100px 2fr 80px;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    align-items: center;
+}
+
+.horse-row:hover {
+    background: #f8f9fa;
+}
+
+.horse-row.podium {
+    background: linear-gradient(90deg, #fff3cd 0%, #ffffff 100%);
+}
+
+.horse-number {
+    background: #2d5a3d;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.col-horse strong {
+    color: #2d5a3d;
+    font-size: 1rem;
+}
+
+.col-jockey {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.col-weight {
+    color: #666;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.odds {
+    background: #e74c3c;
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.col-owner {
+    font-size: 0.85rem;
+    color: #666;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.position {
+    background: #6c757d;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.pos-1 {
+    background: #f1c40f;
+    color: #2c3e50;
+}
+
+.pos-2 {
+    background: #95a5a6;
+    color: white;
+}
+
+.pos-3 {
+    background: #e67e22;
+    color: white;
+}
+
+/* Sidebar */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.leaderboard-section {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.leaderboard-section h3 {
+    color: #2d5a3d;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.leaderboard {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.leaderboard-item {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.leaderboard-item:hover {
+    border-color: #2d5a3d;
+    background: #f8f9fa;
+}
+
+.leaderboard-item .rank {
+    background: #2d5a3d;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.leaderboard-item:first-child .rank {
+    background: #f1c40f;
+    color: #2c3e50;
+}
+
+.leaderboard-item:nth-child(2) .rank {
+    background: #95a5a6;
+}
+
+.leaderboard-item:nth-child(3) .rank {
+    background: #e67e22;
+}
+
+.details {
+    flex: 1;
+}
+
+.details .name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.3rem;
+}
+
+.details .stats {
+    font-size: 0.85rem;
+    color: #666;
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.3rem;
+}
+
+.details .earnings {
+    font-size: 0.9rem;
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+/* Footer */
+.footer {
+    background: #2c3e50;
+    color: white;
+    padding: 1.5rem 2rem;
+    margin-top: auto;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.traf-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.traf-info strong {
+    font-size: 1.1rem;
+}
+
+.traf-info span {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    text-align: right;
+}
+
+.contact-info span {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .content {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .sidebar {
+        flex-direction: row;
+    }
+
+    .leaderboard-section {
+        flex: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .nav-tabs {
+        padding: 0 1rem;
+    }
+
+    .content {
+        padding: 1rem;
+    }
+
+    .horses-table {
+        overflow-x: auto;
+    }
+
+    .table-header,
+    .horse-row {
+        grid-template-columns: 50px 150px 120px 60px 80px 150px 60px;
+        min-width: 700px;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+}
