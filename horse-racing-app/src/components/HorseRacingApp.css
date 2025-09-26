@@ -1,4 +1,6 @@
-/* HorseRacingApp.css */
+/* Minimalistic Gentleman's Club Theme */
+
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Source+Serif+Pro:wght@400;600;700&display=swap');
 
 * {
     margin: 0;
@@ -7,33 +9,51 @@
 }
 
 :root {
-    --primary-green: #1a5d1a;
-    --secondary-green: #2d7a2d;
-    --light-green: #e8f5e8;
-    --accent-gold: #c5a572;
-    --bright-gold: #ffd700;
-    --text-dark: #2c3e50;
-    --text-medium: #5a6c7d;
-    --text-light: #8a9ba8;
-    --background-light: #f8fafc;
-    --background-card: #ffffff;
-    --border-light: #e2e8f0;
-    --border-medium: #cbd5e0;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
-    --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.2);
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 16px;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Refined Gentleman's Club Palette */
+    --charcoal: #2c2c2c;
+    --dark-charcoal: #1a1a1a;
+    --warm-grey: #4a4a4a;
+    --light-grey: #6a6a6a;
+    --cream: #faf9f7;
+    --off-white: #f5f4f2;
+    --warm-white: #ffffff;
+
+    /* Accent Colors - Minimal Use */
+    --cognac: #8b4513;
+    --deep-cognac: #5d2f0a;
+    --brass: #b08d57;
+    --muted-brass: #9c7a47;
+
+    /* Typography */
+    --font-primary: 'Source Serif Pro', serif;
+    --font-secondary: 'Crimson Text', serif;
+
+    /* Spacing & Layout */
+    --space-xs: 0.5rem;
+    --space-sm: 1rem;
+    --space-md: 1.5rem;
+    --space-lg: 2rem;
+    --space-xl: 3rem;
+
+    /* Subtle Shadows */
+    --shadow-minimal: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-moderate: 0 4px 16px rgba(0, 0, 0, 0.12);
+
+    /* Borders */
+    --border-subtle: 1px solid #e8e6e3;
+    --border-muted: 1px solid #d0ccc6;
+
+    /* Transitions */
+    --transition: all 0.2s ease;
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    color: var(--text-dark);
+    font-family: var(--font-primary);
+    background: var(--cream);
+    color: var(--charcoal);
     line-height: 1.6;
+    font-weight: 400;
 }
 
 .racing-app {
@@ -49,28 +69,31 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 80vh;
-    gap: 2rem;
-    padding: 2rem;
+    gap: var(--space-lg);
+    background: var(--warm-white);
+    margin: var(--space-lg);
+    border: var(--border-subtle);
 }
 
 .loading-spinner {
-    width: 64px;
-    height: 64px;
-    border: 4px solid var(--border-light);
-    border-top: 4px solid var(--primary-green);
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--light-grey);
+    border-top: 2px solid var(--charcoal);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
 
 .loading-container h2 {
-    color: var(--primary-green);
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: 600;
+    color: var(--charcoal);
 }
 
 .loading-container p {
-    color: var(--text-medium);
-    font-size: 1rem;
+    font-family: var(--font-secondary);
+    color: var(--warm-grey);
+    font-style: italic;
 }
 
 @keyframes spin {
@@ -78,197 +101,157 @@ body {
     to { transform: rotate(360deg); }
 }
 
-/* Header */
+/* Header - Clean & Sophisticated */
 .header {
-    background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%);
-    color: white;
-    padding: 2rem;
-    box-shadow: var(--shadow-lg);
-    position: relative;
-    overflow: hidden;
-}
-
-.header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    opacity: 0.1;
-    pointer-events: none;
+    background: var(--dark-charcoal);
+    color: var(--cream);
+    padding: var(--space-xl) var(--space-lg);
+    border-bottom: 1px solid var(--warm-grey);
 }
 
 .header-content {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: relative;
-    z-index: 1;
 }
 
 .logo-section h1 {
-    font-size: clamp(1.75rem, 4vw, 2.5rem);
-    font-weight: 800;
-    margin-bottom: 0.5rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: var(--space-xs);
+    letter-spacing: 0.5px;
 }
 
 .logo-section p {
+    font-family: var(--font-secondary);
     font-size: 1rem;
-    opacity: 0.9;
-    font-weight: 500;
+    font-style: italic;
+    opacity: 0.8;
 }
 
 .header-info {
     text-align: right;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: var(--space-md);
+    border: var(--border-subtle);
+    backdrop-filter: blur(10px);
 }
 
 .race-date {
-    font-size: 1.1rem;
     font-weight: 600;
+    margin-bottom: var(--space-xs);
+    color: var(--brass);
 }
 
 .update-status {
+    font-family: var(--font-secondary);
     font-size: 0.9rem;
     opacity: 0.8;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+    font-style: italic;
 }
 
 .error-badge {
-    background: rgba(255, 193, 7, 0.9);
-    color: var(--text-dark);
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
+    background: var(--cognac);
+    color: var(--cream);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: 3px;
     font-size: 0.8rem;
     font-weight: 600;
+    margin-left: var(--space-sm);
 }
 
-/* Main Content Layout */
+/* Layout */
 .content {
     flex: 1;
     display: grid;
-    grid-template-columns: 350px 1fr 300px;
-    gap: 2rem;
-    padding: 2rem;
-    max-width: 1400px;
+    grid-template-columns: 320px 1fr 280px;
+    gap: var(--space-lg);
+    padding: var(--space-xl) var(--space-lg);
+    max-width: 1200px;
     margin: 0 auto;
     width: 100%;
 }
 
 /* Race Sidebar */
 .race-sidebar {
-    background: var(--background-card);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--border-light);
+    background: var(--warm-white);
+    border: var(--border-subtle);
     overflow: hidden;
     height: fit-content;
     position: sticky;
-    top: 2rem;
+    top: var(--space-lg);
 }
 
 .sidebar-header {
-    padding: 1.5rem;
-    background: linear-gradient(135deg, var(--light-green) 0%, #f0f9f0 100%);
-    border-bottom: 1px solid var(--border-light);
-    text-align: center;
+    padding: var(--space-lg);
+    background: var(--charcoal);
+    color: var(--cream);
+    border-bottom: 2px solid var(--brass);
 }
 
 .sidebar-header h2 {
-    color: var(--primary-green);
     font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: 0.25rem;
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
 }
 
 .sidebar-header p {
-    color: var(--text-medium);
+    font-family: var(--font-secondary);
     font-size: 0.9rem;
+    opacity: 0.8;
+    font-style: italic;
 }
 
 .race-list {
     max-height: 70vh;
     overflow-y: auto;
-    padding: 1rem;
+    padding: var(--space-md);
 }
 
 .race-item {
     display: flex;
     align-items: flex-start;
-    padding: 1rem;
-    margin-bottom: 0.75rem;
-    border: 2px solid var(--border-light);
-    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    margin-bottom: var(--space-sm);
+    border: var(--border-subtle);
     cursor: pointer;
     transition: var(--transition);
-    background: var(--background-light);
-    position: relative;
-}
-
-.race-item::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 0;
-    background: var(--light-green);
-    transition: width 0.3s ease;
-    border-radius: var(--radius-md) 0 0 var(--radius-md);
-}
-
-.race-item:hover::before {
-    width: 4px;
+    background: var(--warm-white);
 }
 
 .race-item:hover {
-    border-color: var(--primary-green);
-    background: var(--light-green);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    background: var(--off-white);
+    border-left: 3px solid var(--brass);
+    padding-left: calc(var(--space-md) - 2px);
 }
 
 .race-item.active {
-    border-color: var(--primary-green);
-    background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%);
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-}
-
-.race-item.active::before {
-    width: 4px;
-    background: var(--bright-gold);
+    background: var(--charcoal);
+    color: var(--cream);
+    border-left: 3px solid var(--brass);
+    padding-left: calc(var(--space-md) - 2px);
 }
 
 .race-number {
-    background: var(--primary-green);
-    color: white;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+    background: var(--warm-grey);
+    color: var(--cream);
+    width: 32px;
+    height: 32px;
+    border-radius: 2px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
     font-size: 0.9rem;
-    margin-right: 1rem;
+    margin-right: var(--space-md);
     flex-shrink: 0;
-    box-shadow: var(--shadow-sm);
 }
 
 .race-item.active .race-number {
-    background: var(--bright-gold);
-    color: var(--text-dark);
+    background: var(--brass);
+    color: var(--charcoal);
 }
 
 .race-content {
@@ -277,24 +260,21 @@ body {
 }
 
 .race-time {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--accent-gold);
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--cognac);
+    margin-bottom: var(--space-xs);
+    font-size: 0.95rem;
 }
 
 .race-item.active .race-time {
-    color: var(--bright-gold);
+    color: var(--brass);
 }
 
 .race-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-    line-height: 1.3;
+    font-size: 0.9rem;
+    font-weight: 400;
+    margin-bottom: var(--space-sm);
+    line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -304,165 +284,127 @@ body {
 .race-metadata {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    margin-bottom: 0.5rem;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-xs);
 }
 
 .distance, .prize {
-    font-size: 0.8rem;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
+    font-size: 0.85rem;
+    color: var(--warm-grey);
 }
 
-.distance {
-    color: var(--primary-green);
-    font-weight: 600;
-}
-
-.race-item.active .distance {
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.prize {
-    color: var(--accent-gold);
-    font-weight: 700;
-}
-
+.race-item.active .distance,
 .race-item.active .prize {
-    color: var(--bright-gold);
+    color: var(--off-white);
 }
 
 .surface-tag {
     font-size: 0.75rem;
-    padding: 0.2rem 0.6rem;
-    border-radius: 12px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.surface-tag.turf {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.surface-tag.all-weather {
-    background: #fef3c7;
-    color: #92400e;
+    padding: var(--space-xs);
+    background: var(--off-white);
+    color: var(--warm-grey);
+    border: var(--border-subtle);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
 }
 
 .race-item.active .surface-tag {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--cream);
+    border-color: var(--brass);
 }
 
 /* Main Content */
 .main-content {
-    background: var(--background-card);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--border-light);
+    background: var(--warm-white);
+    border: var(--border-subtle);
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
 }
 
 .race-details {
-    padding: 2rem;
-    flex: 1;
+    padding: var(--space-xl);
 }
 
 .race-header {
-    margin-bottom: 2rem;
-}
-
-.race-title-section {
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--space-xl);
+    padding-bottom: var(--space-lg);
+    border-bottom: var(--border-muted);
 }
 
 .race-title-section h2 {
-    color: var(--primary-green);
-    font-size: clamp(1.25rem, 3vw, 1.75rem);
-    font-weight: 700;
+    color: var(--charcoal);
+    font-size: 1.75rem;
+    font-weight: 600;
     line-height: 1.3;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
+    margin-bottom: var(--space-md);
 }
 
 .race-badges {
     display: flex;
-    gap: 0.75rem;
+    gap: var(--space-sm);
     flex-wrap: wrap;
+    margin-bottom: var(--space-lg);
 }
 
 .category-badge, .surface-badge {
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
+    padding: var(--space-xs) var(--space-md);
+    background: var(--charcoal);
+    color: var(--cream);
     font-size: 0.8rem;
-    font-weight: 600;
+    font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-.category-badge {
-    background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
-    color: white;
-}
-
 .surface-badge {
-    background: var(--accent-gold);
-    color: white;
+    background: var(--cognac);
 }
 
 .race-info-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
+    gap: var(--space-md);
 }
 
 .info-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: var(--background-light);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-light);
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--off-white);
+    border: var(--border-subtle);
     transition: var(--transition);
 }
 
 .info-card:hover {
-    background: var(--light-green);
-    border-color: var(--primary-green);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
+    background: var(--cream);
+    border-left: 3px solid var(--brass);
+    padding-left: calc(var(--space-md) - 2px);
 }
 
 .info-icon {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     width: 40px;
     height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--primary-green);
-    color: white;
-    border-radius: 50%;
+    background: var(--charcoal);
+    color: var(--cream);
     flex-shrink: 0;
 }
 
 .info-content {
     display: flex;
     flex-direction: column;
+    gap: 2px;
 }
 
 .info-label {
-    font-size: 0.8rem;
-    color: var(--text-medium);
+    font-size: 0.75rem;
+    color: var(--warm-grey);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -470,77 +412,57 @@ body {
 
 .info-value {
     font-size: 1rem;
-    color: var(--text-dark);
-    font-weight: 700;
+    color: var(--charcoal);
+    font-weight: 600;
 }
 
 /* Horses Section */
-.horses-section {
-    margin-top: 2rem;
-}
-
 .horses-section h3 {
-    color: var(--primary-green);
+    color: var(--charcoal);
     font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    font-weight: 600;
+    margin-bottom: var(--space-lg);
+    text-align: center;
 }
 
 .horses-table {
-    border-radius: var(--radius-md);
+    border: var(--border-subtle);
     overflow: hidden;
-    border: 1px solid var(--border-light);
+    background: var(--warm-white);
 }
 
 .table-header {
     display: grid;
     grid-template-columns: 50px 60px 2fr 1.5fr 80px 90px 60px 80px 1.5fr;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%);
-    color: white;
-    font-weight: 700;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    background: var(--charcoal);
+    color: var(--cream);
+    font-weight: 600;
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--brass);
 }
 
 .horses-list {
-    background: white;
+    background: var(--warm-white);
 }
 
 .horse-row {
     display: grid;
     grid-template-columns: 50px 60px 2fr 1.5fr 80px 90px 60px 80px 1.5fr;
-    gap: 0.75rem;
-    padding: 1rem;
-    border-bottom: 1px solid var(--border-light);
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    border-bottom: var(--border-subtle);
     transition: var(--transition);
     align-items: center;
-    position: relative;
-}
-
-.horse-row::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 0;
-    background: var(--light-green);
-    transition: width 0.3s ease;
-}
-
-.horse-row:hover::before {
-    width: 4px;
 }
 
 .horse-row:hover {
-    background: var(--background-light);
-    transform: translateX(4px);
+    background: var(--off-white);
+    border-left: 3px solid var(--brass);
+    padding-left: calc(var(--space-md) - 2px);
 }
 
 .horse-row:last-child {
@@ -548,15 +470,14 @@ body {
 }
 
 .horse-row.top-three {
-    background: linear-gradient(90deg, #fef7cd 0%, #ffffff 100%);
+    background: rgba(176, 141, 87, 0.05);
 }
 
 .horse-number {
-    background: var(--primary-green);
-    color: white;
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
+    background: var(--warm-grey);
+    color: var(--cream);
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -566,90 +487,84 @@ body {
 
 .silks {
     font-size: 1.2rem;
-    display: block;
     text-align: center;
 }
 
 .horse-info {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--space-xs);
 }
 
 .horse-name {
-    color: var(--primary-green);
+    color: var(--charcoal);
     font-size: 0.95rem;
-    font-weight: 700;
+    font-weight: 600;
+    line-height: 1.2;
 }
 
 .owner-name {
-    color: var(--text-light);
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-family: var(--font-secondary);
+    color: var(--light-grey);
+    font-size: 0.8rem;
+    font-style: italic;
 }
 
 .jockey-name {
-    color: var(--text-dark);
-    font-weight: 600;
+    color: var(--warm-grey);
+    font-weight: 500;
     font-size: 0.9rem;
 }
 
 .weight-value {
-    background: var(--background-light);
-    color: var(--text-medium);
-    padding: 0.25rem 0.5rem;
-    border-radius: 12px;
+    background: var(--off-white);
+    color: var(--warm-grey);
+    padding: var(--space-xs);
     font-weight: 600;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     text-align: center;
+    border: var(--border-subtle);
 }
 
 .odds-value {
-    background: #22c55e;
-    color: white;
-    padding: 0.4rem 0.7rem;
-    border-radius: 16px;
+    background: var(--charcoal);
+    color: var(--cream);
+    padding: var(--space-xs);
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     text-align: center;
-    box-shadow: var(--shadow-sm);
 }
 
 .odds-value.favorite {
-    background: var(--accent-gold);
-    animation: pulse-gold 2s infinite;
-}
-
-@keyframes pulse-gold {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+    background: var(--cognac);
 }
 
 .age-value {
-    background: var(--accent-gold);
-    color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 12px;
+    background: var(--warm-grey);
+    color: var(--cream);
+    padding: var(--space-xs);
     font-weight: 600;
     font-size: 0.8rem;
     text-align: center;
 }
 
 .form-value {
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    background: var(--background-light);
-    color: var(--text-dark);
-    padding: 0.25rem 0.5rem;
-    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    background: var(--off-white);
+    color: var(--charcoal);
+    padding: var(--space-xs);
     font-weight: 600;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     text-align: center;
+    border: var(--border-subtle);
+    letter-spacing: 1px;
 }
 
 .trainer-name {
-    color: var(--text-medium);
+    font-family: var(--font-secondary);
+    color: var(--warm-grey);
     font-size: 0.85rem;
-    font-weight: 500;
+    font-style: italic;
 }
 
 /* No Selection State */
@@ -658,115 +573,109 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 500px;
-    padding: 2rem;
+    padding: var(--space-xl);
+    background: var(--warm-white);
 }
 
 .selection-prompt {
     text-align: center;
-    color: var(--text-medium);
+    color: var(--warm-grey);
+    background: var(--off-white);
+    padding: var(--space-xl);
+    border: 2px dashed var(--light-grey);
 }
 
 .prompt-icon {
-    font-size: 4rem;
-    margin-bottom: 1rem;
+    font-size: 3rem;
+    margin-bottom: var(--space-md);
     opacity: 0.3;
-    animation: bounce 2s infinite;
 }
 
 .selection-prompt h2 {
-    color: var(--primary-green);
+    color: var(--charcoal);
     font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+    font-weight: 600;
+    margin-bottom: var(--space-sm);
 }
 
 .selection-prompt p {
+    font-family: var(--font-secondary);
     font-size: 1rem;
-}
-
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-10px); }
-    60% { transform: translateY(-5px); }
+    font-style: italic;
+    line-height: 1.5;
 }
 
 /* Stats Sidebar */
 .stats-sidebar {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--space-lg);
 }
 
 .jockey-leaderboard, .track-info, .refresh-section {
-    background: var(--background-card);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--border-light);
+    background: var(--warm-white);
+    padding: var(--space-lg);
+    border: var(--border-subtle);
 }
 
 .jockey-leaderboard h3, .track-info h3 {
-    color: var(--primary-green);
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    color: var(--charcoal);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: var(--space-md);
     text-align: center;
-    justify-content: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .leaderboard-list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--space-sm);
 }
 
 .jockey-item {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem;
-    background: var(--background-light);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-light);
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+    background: var(--off-white);
+    border: var(--border-subtle);
     transition: var(--transition);
 }
 
 .jockey-item:hover {
-    background: var(--light-green);
-    border-color: var(--primary-green);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+    background: var(--cream);
+    border-left: 3px solid var(--brass);
+    padding-left: calc(var(--space-sm) - 2px);
 }
 
 .rank {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     flex-shrink: 0;
-    background: var(--text-medium);
-    color: white;
+    background: var(--light-grey);
+    color: var(--cream);
 }
 
 .rank.position-1 {
-    background: linear-gradient(135deg, var(--bright-gold), #fbbf24);
-    color: var(--text-dark);
+    background: var(--brass);
+    color: var(--charcoal);
 }
 
 .rank.position-2 {
-    background: linear-gradient(135deg, #e5e7eb, #9ca3af);
-    color: var(--text-dark);
+    background: var(--warm-grey);
+    color: var(--cream);
 }
 
 .rank.position-3 {
-    background: linear-gradient(135deg, #fed7aa, #f97316);
-    color: white;
+    background: var(--cognac);
+    color: var(--cream);
 }
 
 .jockey-details {
@@ -775,58 +684,63 @@ body {
 }
 
 .jockey-name {
-    font-weight: 700;
-    color: var(--primary-green);
+    font-weight: 600;
+    color: var(--charcoal);
     font-size: 0.9rem;
-    margin-bottom: 0.25rem;
+    margin-bottom: 2px;
 }
 
 .jockey-stats {
     display: flex;
-    gap: 0.5rem;
-    font-size: 0.75rem;
-    color: var(--text-medium);
-    margin-bottom: 0.25rem;
+    gap: var(--space-sm);
+    font-family: var(--font-secondary);
+    font-size: 0.8rem;
+    color: var(--warm-grey);
+    font-style: italic;
 }
 
 .earnings {
     font-size: 0.8rem;
-    color: #22c55e;
-    font-weight: 700;
+    color: var(--cognac);
+    font-weight: 600;
 }
 
 .info-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--space-xs);
 }
 
 .info-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem;
-    background: var(--background-light);
-    border-radius: var(--radius-sm);
+    padding: var(--space-sm);
+    background: var(--off-white);
+    border: var(--border-subtle);
+    transition: var(--transition);
+}
+
+.info-row:hover {
+    background: var(--cream);
 }
 
 .info-row .label {
     font-size: 0.8rem;
-    color: var(--text-medium);
-    font-weight: 600;
+    color: var(--warm-grey);
+    font-weight: 500;
 }
 
 .info-row .value,
 .info-row a {
     font-size: 0.8rem;
-    color: var(--text-dark);
+    color: var(--charcoal);
     font-weight: 600;
     text-decoration: none;
 }
 
 .info-row a:hover {
-    color: var(--primary-green);
-    text-decoration: underline;
+    color: var(--cognac);
 }
 
 .refresh-section {
@@ -834,103 +748,102 @@ body {
 }
 
 .refresh-btn {
-    background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: var(--radius-md);
+    background: var(--charcoal);
+    color: var(--cream);
+    border: var(--border-subtle);
+    padding: var(--space-sm) var(--space-md);
     font-weight: 600;
     font-size: 0.9rem;
     cursor: pointer;
     transition: var(--transition);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin: 0 auto 0.5rem;
-    box-shadow: var(--shadow-sm);
+    gap: var(--space-xs);
+    margin: 0 auto var(--space-sm);
 }
 
 .refresh-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-.refresh-btn:active {
-    transform: translateY(0);
+    background: var(--cognac);
 }
 
 .refresh-note {
-    font-size: 0.75rem;
-    color: var(--text-light);
-    margin: 0;
+    font-family: var(--font-secondary);
+    font-size: 0.8rem;
+    color: var(--warm-grey);
+    font-style: italic;
 }
 
 /* Footer */
 .footer {
-    background: linear-gradient(135deg, var(--text-dark) 0%, #374151 100%);
-    color: white;
-    margin-top: 2rem;
+    background: var(--dark-charcoal);
+    color: var(--cream);
+    margin-top: var(--space-xl);
+    border-top: 2px solid var(--brass);
 }
 
 .footer-content {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: var(--space-xl) var(--space-lg);
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
+    gap: var(--space-lg);
 }
 
 .footer-section h4 {
-    color: var(--bright-gold);
+    color: var(--brass);
     font-size: 1rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    font-weight: 600;
+    margin-bottom: var(--space-sm);
 }
 
 .footer-section p {
-    color: #d1d5db;
+    font-family: var(--font-secondary);
+    color: var(--cream);
     font-size: 0.9rem;
     line-height: 1.6;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-xs);
+    opacity: 0.8;
 }
 
 .footer-bottom {
-    border-top: 1px solid #4b5563;
-    padding: 1rem 2rem;
+    border-top: var(--border-muted);
+    padding: var(--space-md) var(--space-lg);
     text-align: center;
     background: rgba(0, 0, 0, 0.2);
 }
 
 .footer-bottom p {
-    color: #9ca3af;
+    font-family: var(--font-secondary);
+    color: var(--cream);
     font-size: 0.8rem;
-    margin: 0.25rem 0;
+    margin: var(--space-xs) 0;
+    opacity: 0.6;
+    font-style: italic;
+}
+
+/* Scrollbar */
+.race-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.race-list::-webkit-scrollbar-track {
+    background: var(--off-white);
+}
+
+.race-list::-webkit-scrollbar-thumb {
+    background: var(--warm-grey);
+}
+
+.race-list::-webkit-scrollbar-thumb:hover {
+    background: var(--charcoal);
 }
 
 /* Responsive Design */
-@media (max-width: 1200px) {
-    .content {
-        grid-template-columns: 300px 1fr 280px;
-        gap: 1.5rem;
-    }
-
-    .table-header,
-    .horse-row {
-        grid-template-columns: 40px 50px 1.5fr 1fr 70px 80px 50px 70px 1fr;
-        gap: 0.5rem;
-        padding: 0.75rem;
-        font-size: 0.8rem;
-    }
-}
-
 @media (max-width: 1024px) {
     .content {
         grid-template-columns: 1fr;
-        gap: 1.5rem;
+        gap: var(--space-lg);
     }
 
     .race-sidebar,
@@ -940,16 +853,15 @@ body {
 
     .stats-sidebar {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--space-lg);
     }
 
     .race-list {
         max-height: none;
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1rem;
-        padding: 1rem;
+        gap: var(--space-sm);
     }
 
     .race-item {
@@ -959,31 +871,25 @@ body {
 
 @media (max-width: 768px) {
     .content {
-        padding: 1rem;
-        gap: 1rem;
+        padding: var(--space-lg) var(--space-md);
     }
 
     .header {
-        padding: 1.5rem 1rem;
+        padding: var(--space-lg) var(--space-md);
     }
 
     .header-content {
         flex-direction: column;
-        gap: 1rem;
+        gap: var(--space-md);
         text-align: center;
     }
 
     .race-details {
-        padding: 1.5rem;
+        padding: var(--space-lg);
     }
 
     .race-info-grid {
         grid-template-columns: 1fr;
-        gap: 0.75rem;
-    }
-
-    .info-card {
-        padding: 0.75rem;
     }
 
     .horses-table {
@@ -992,28 +898,15 @@ body {
 
     .table-header,
     .horse-row {
-        grid-template-columns: 40px 40px 120px 100px 60px 70px 40px 60px 100px;
+        grid-template-columns: 40px 50px 120px 100px 60px 70px 50px 60px 100px;
         min-width: 600px;
-        gap: 0.5rem;
-        padding: 0.75rem 0.5rem;
+        gap: var(--space-xs);
+        padding: var(--space-sm);
         font-size: 0.75rem;
-    }
-
-    .horse-info {
-        min-width: 120px;
-    }
-
-    .horse-name {
-        font-size: 0.85rem;
     }
 
     .owner-name {
         display: none;
-    }
-
-    .jockey-name,
-    .trainer-name {
-        font-size: 0.8rem;
     }
 
     .race-list {
@@ -1023,98 +916,46 @@ body {
     .stats-sidebar {
         grid-template-columns: 1fr;
     }
-
-    .footer-content {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-        text-align: center;
-    }
 }
 
 @media (max-width: 480px) {
-    .header-content {
-        padding: 0;
-    }
-
     .logo-section h1 {
         font-size: 1.5rem;
     }
 
-    .logo-section p {
-        font-size: 0.9rem;
-    }
-
     .race-details {
-        padding: 1rem;
+        padding: var(--space-md);
     }
 
     .race-title-section h2 {
         font-size: 1.25rem;
     }
 
-    .race-badges {
-        justify-content: center;
-    }
-
-    .table-header,
-    .horse-row {
-        grid-template-columns: 35px 35px 100px 80px 50px 60px 35px 50px 80px;
-        min-width: 500px;
-        font-size: 0.7rem;
-        padding: 0.5rem;
-    }
-
-    .horse-name {
-        font-size: 0.8rem;
-    }
-
-    .silks {
-        font-size: 1rem;
-    }
-
-    .horse-number {
-        width: 28px;
-        height: 28px;
-        font-size: 0.8rem;
-    }
-
     .jockey-leaderboard,
     .track-info,
     .refresh-section {
-        padding: 1rem;
+        padding: var(--space-md);
     }
+}
 
-    .jockey-item {
-        padding: 0.5rem;
-    }
-
-    .rank {
-        width: 28px;
-        height: 28px;
-        font-size: 0.8rem;
-    }
-
-    .jockey-name {
-        font-size: 0.85rem;
-    }
-
-    .jockey-stats {
-        font-size: 0.7rem;
-    }
-
-    .earnings {
-        font-size: 0.75rem;
-    }
+/* Focus States */
+.race-item:focus,
+.refresh-btn:focus,
+.info-row a:focus,
+.jockey-item:focus {
+    outline: 2px solid var(--brass);
+    outline-offset: 2px;
 }
 
 /* Print Styles */
 @media print {
     .racing-app {
         background: white;
+        color: black;
     }
 
     .header {
-        background: var(--primary-green) !important;
+        background: var(--charcoal) !important;
         color: white !important;
     }
 
@@ -1122,64 +963,4 @@ body {
     .footer {
         display: none;
     }
-
-    .content {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-
-    .race-sidebar,
-    .stats-sidebar {
-        break-inside: avoid;
-    }
-
-    .horses-table {
-        break-inside: avoid;
-    }
-
-    .horse-row {
-        break-inside: avoid;
-    }
-}
-
-
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-
-    .loading-spinner {
-        animation: none;
-        border: 4px solid var(--primary-green);
-    }
-}
-
-/* Focus styles for accessibility */
-.race-item:focus,
-.refresh-btn:focus,
-.info-row a:focus {
-    outline: 3px solid var(--accent-gold);
-    outline-offset: 2px;
-}
-
-/* Custom scrollbar */
-.race-list::-webkit-scrollbar {
-    width: 6px;
-}
-
-.race-list::-webkit-scrollbar-track {
-    background: var(--background-light);
-}
-
-.race-list::-webkit-scrollbar-thumb {
-    background: var(--primary-green);
-    border-radius: 3px;
-}
-
-.race-list::-webkit-scrollbar-thumb:hover {
-    background: var(--secondary-green);
 }
