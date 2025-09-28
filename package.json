@@ -1,6 +1,5 @@
 {
-  "homepage": "https://tr4allzz.github.io/HorseCoin/",
-  "scripts": {
+   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
